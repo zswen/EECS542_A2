@@ -1,10 +1,10 @@
 import numpy as np
-
+from collections import OrderedDict
 image_root = '../TrainVal/VOCdevkit/VOC2011/JPEGImages'
 annotation_root = '../TrainVal/VOCdevkit/VOC2011/Annotations'
 segmentation_root = '../TrainVal/VOCdevkit/VOC2011/SegmentationClass'
 
-className2Idx = \
+className2Idx = OrderedDict(
 	   {'aeroplane':1, 
 		'bicycle':2, 
 		'bird':3, 
@@ -25,9 +25,10 @@ className2Idx = \
 		'sofa':18, 
 		'train':19, 
 		'tvmonitor':20
-		}
+		})
+idx2ClassName = {v: k for k, v in className2Idx.iteritems()}
 
-color2Idx = \
+color2Idx = OrderedDict(
 		{(0, 0, 128): 1,
 		 (0, 128, 0): 2,
 		 (0, 128, 128): 3,
@@ -49,4 +50,6 @@ color2Idx = \
 		 (0, 192, 128): 19,
 		 (128, 64, 0): 20,
 		 (192, 224, 224): 21
-		}
+		})
+
+idx2Color = {v: k for k, v in color2Idx.iteritems()}

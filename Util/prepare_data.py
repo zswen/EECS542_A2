@@ -1,5 +1,6 @@
 import os
 import cv2
+import xml.etree.ElementTree as et
 import numpy as np
 
 def generateSegLabel(image_names, color2class):
@@ -16,8 +17,6 @@ def generateSegLabel(image_names, color2class):
 		labels.append(label)
 	return np.array(labels)
 
-import xml.etree.ElementTree as et
-
 #0~20 classes, 0 for background
 def getDetectionLabel(filename, dict, off_value = -1):
 	vec = off_value * np.ones(len(dict) + 1) # add one for background
@@ -27,7 +26,7 @@ def getDetectionLabel(filename, dict, off_value = -1):
 		obj = subcatagory.find('name')
 		if obj != None:
 			vec[dict[obj.text]] = 1
-	print vec
+	return vec
 
 def main():
 	generate_seg_label(['2007_000032.png'], {})
