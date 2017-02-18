@@ -3,7 +3,7 @@ import xml.etree.ElementTree as et
 
 
 def getDetectionLabel(filename,dict):
-	vec = [0]*21
+	vec = [-1]*21
 	tree = et.parse(filename)
 	root = tree.getroot()
 	for subcatagory in root:
