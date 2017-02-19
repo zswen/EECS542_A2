@@ -3,10 +3,11 @@ import cv2
 import xml.etree.ElementTree as et
 import numpy as np
 
-
-def getSegLabel(image_names, color2class):
+#return list of label masks, since size may not match
+def getSegLabel(image_names, color2class, dir_name):
 	labels = []
 	for idx, name in enumerate(image_names):
+		name = name + '.png'
 		path = os.path.join(dir_name, name)
 		img = cv2.imread(path)
 		label = np.zeros(img.shape[0: 2])
@@ -15,12 +16,13 @@ def getSegLabel(image_names, color2class):
 				if tuple(img[r, c, :]) != (0, 0, 0):
 					label[r, c] = color2class[tuple(img[r, c, :])]
 		labels.append(label)
-	return np.array(labels)
+	return labels
 
-#0~20 classes, 0 for background
-def getDetectionLabel(filenames, dir_name, dict, off_value = -1):
+#0~20 classes, 0 for background, return a matrix, with an image in a row
+def getDetectionLabel(filenames, dict, dir_name, off_value = -1):
 	labels = []
-	for file in enumerate(filenames):
+	for idx, file in enumerate(filenames):
+		file = file + '.xml'
 		path = os.path.join(dir_name, file)
 		vec = off_value * np.ones(len(dict) + 1) # add one for background
 		tree = et.parse(path)
@@ -30,35 +32,30 @@ def getDetectionLabel(filenames, dir_name, dict, off_value = -1):
 			if obj != None:
 				vec[dict[obj.text]] = 1
 		labels.append(vec)
-	return labels
+	return np.array(labels)
+
+def testLabel(image_names, annotation_root, image_root, \
+			  segmentation_root, className2Idx, color2Idx, idx2ClassName):
+	detectionLabels = getDetectionLabel(image_names, className2Idx, annotation_root)
+	segmentationLabels = getSegLabel(image_names, color2Idx, segmentation_root)
+	assert detectionLabels.shape[0] == len(segmentationLabels)
+	for idx in range(detectionLabels.shape[0]):
+		from_exist = (detectionLabels[idx, :] + 1).nonzero()[0]
+		print 'existence says this image has    ',
+		print [idx2ClassName[it] for it in from_exist]
+		seg = np.unique(segmentationLabels[idx])[1: -1]
+		print 'segmentation says this image has ',
+		print [idx2ClassName[it] for it in seg]
+		print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
+	return
 
 def main():
-	className2Idx = OrderedDict(
-	   {'aeroplane':1, 
-		'bicycle':2, 
-		'bird':3, 
-		'boat':4, 
-		'bottle':5, 
-		'bus':6, 
-		'car':7, 
-		'cat':8, 
-		'chair':9, 
-		'cow':10, 
-		'diningtable':11, 
-		'dog':12, 
-		'horse':13, 
-		'motorbike':14, 
-		'person':15, 
-		'pottedplant':16, 
-		'sheep':17, 
-		'sofa':18, 
-		'train':19, 
-		'tvmonitor':20
-		})
-	#generate_seg_label(['2007_000032.png'], {})
-	dir_name = '../TrainVal/VOCdevkit/VOC2011/SegmentationClass'
-	getDetectionLabel(['2007_000032.png'],dir_name,className2Idx)
-	getSegLabel(['2007_000032.png'], {})
+	import sys
+	sys.path.append('../Exp')
+	from config import *
+	image_names = ['2007_000032', '2007_000033', '2007_000039', '2007_000068', '2007_000170']
+	testLabel(image_names, annotation_root, image_root, segmentation_root, 
+		className2Idx, color2Idx, idx2ClassName)
 	return
 
 if __name__ == '__main__':

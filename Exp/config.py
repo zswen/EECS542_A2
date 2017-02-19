@@ -1,5 +1,6 @@
 import numpy as np
 from collections import OrderedDict
+
 image_root = '../TrainVal/VOCdevkit/VOC2011/JPEGImages'
 annotation_root = '../TrainVal/VOCdevkit/VOC2011/Annotations'
 segmentation_root = '../TrainVal/VOCdevkit/VOC2011/SegmentationClass'
