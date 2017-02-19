@@ -1,3 +1,4 @@
 TrainVal/*
 VOCdevkit/*
 tensorflow-fcn/*
+*/vgg.npy
