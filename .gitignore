@@ -1,4 +1,6 @@
 TrainVal/*
 VOCdevkit/*
 tensorflow-fcn/*
-*/vgg.npy
+*/vgg16.npy
+.DS_Store
+*.pyc

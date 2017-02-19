@@ -40,10 +40,11 @@ def testLabel(image_names, annotation_root, image_root, \
 	segmentationLabels = getSegLabel(image_names, color2Idx, segmentation_root)
 	assert detectionLabels.shape[0] == len(segmentationLabels)
 	for idx in range(detectionLabels.shape[0]):
+		print 'image:', image_names[idx]
 		from_exist = (detectionLabels[idx, :] + 1).nonzero()[0]
 		print 'existence says this image has    ',
 		print [idx2ClassName[it] for it in from_exist]
-		seg = np.unique(segmentationLabels[idx])[1: -1]
+		print segmentationLabels[idx]
 		print 'segmentation says this image has ',
 		print [idx2ClassName[it] for it in seg]
 		print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
@@ -55,7 +56,7 @@ def main():
 	from config import *
 	image_names = ['2007_000032', '2007_000033', '2007_000039', '2007_000068', '2007_000170']
 	testLabel(image_names, annotation_root, image_root, segmentation_root, 
-		className2Idx, color2Idx, idx2ClassName)
+			  className2Idx, color2Idx, idx2ClassName)
 	return
 
 if __name__ == '__main__':
