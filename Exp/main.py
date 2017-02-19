@@ -4,7 +4,7 @@ import os
 import sys
 import cv2
 sys.path.append('../Util')
-from prepare_data import generateSegLabel, getDetectionLabel
+from prepare_data import getSegLabel, getDetectionLabel
 
 def main():
 	f = '2007_000032'
@@ -15,10 +15,13 @@ def main():
 	label_mask = cv2.imread(seg_path)
 	log = open(full_path, 'r')
 	exist = getDetectionLabel(full_path, className2Idx)
-	generateSegLabel(image_names, color2class):
 	from_exist = (exist + 1).nonzero()[0]
-	print 'This image has ',
+	print 'existence says this image has ',
 	print [idx2ClassName[it] for it in from_exist]
+	segL = getSegLabel([f + '.png'], color2Idx)
+	seg = np.unique(segL)[1: -1]
+	print 'segmentation says this image has ',
+	print [idx2ClassName[it] for it in seg]
 	return
 
 if __name__ == '__main__':
