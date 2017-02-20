@@ -23,17 +23,14 @@ def loadData(all_image_names, data_loader, cv_full, cv_empty, data_loader_capaci
 		while len(data_loader) >= data_loader_capacity:
 			cv_full.wait()
 		images = []
-		labels = []
 		image_names = all_image_names[batch_current * batch_size: (batch_current + 1) * batch_size]
 		batch_current += 1
+		label_masks = getSegLabel(image_names, color2Idx, segmentation_root)
 		for name in image_names:
-			print name
-			label_mask = getSegLabel(name, color2Idx, segmentation_root)
 			image = cv2.imread(os.path.join(image_root, name + '.jpg'))
 			images.append(image)
-			labels.append(label_mask)
-		data_loader.append({'images': images, 'label_masks': labels})
-		cv_empty.signal()
+		data_loader.append({'images': images, 'label_masks': label_masks})
+		cv_empty.notify()
 		cv_full.release()
 		if batch_size * batch_current >= len(all_image_names):
 			batch_current = 0
@@ -48,14 +45,15 @@ def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
 	data = data_loader.pop(0)
 	image_inputs = data['images']
 	image_labels = data['label_masks']
-	cv_full.signal()
+	cv_full.notify()
 	cv_empty.release()
 	assert len(image_inputs) == len(image_labels)
-	for idx in enumerate(image_inputs):
+	for idx, image_input in enumerate(image_inputs):
 		[loss, _] = sess.run([net.loss, net.train_op], \
-						  				   feed_dict = {im_input: np.array([image_inputs[idx]]),
-						  			   	   				seg_label: np.array([image_labels[idx]]),
-						  			   	   				apply_grads_flag: int(idx == len(image_inputs) - 1)})
+						  				   feed_dict = {net.im_input: np.array([image_input]),
+						  			   	   				net.seg_label: np.array([image_labels[idx]]),
+						  			   	   				net.apply_grads_flag: int(idx == len(image_inputs) - 1)})
+	net.done_optimize()
 	if not silent:
 		print 'segmentation loss:', loss
 	return
@@ -69,11 +67,8 @@ def main():
 					  log_device_placement = False))
 	net = FCN32VGG()
 	with tf.device('/cpu: %d' % device_idx): 
-		im_input = tf.placeholder(tf.float32)
-		seg_label = tf.placeholder(tf.int32)
-		apply_grads_flag = tf.placeholder(tf.int32)
-		net.build(im_input, debug = True)
-		net.loss(seg_label, apply_grads_flag, 1e-4)
+		net.build(debug = True)
+		net.loss(1e-4)
 	init = tf.global_variables_initializer()
 	sess.run(init)
 	for idx, f in enumerate(['2007_000032', '2007_000033']):

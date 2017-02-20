@@ -33,9 +33,12 @@ class FCN32VGG:
         self.wd = 5e-4
         self.gradients_pool = []
         self.average_grads = []
+        self.im_input = tf.placeholder(tf.float32)
+        self.seg_label = tf.placeholder(tf.int32)
+        self.apply_grads_flag = tf.placeholder(tf.int32)
         print("npy file loaded")
 
-    def build(self, bgr, train=False, num_classes=20, random_init_fc8=False,
+    def build(self, train=False, num_classes=20, random_init_fc8=False,
               debug=False):
         """
         Build the VGG model using loaded weights
@@ -59,7 +62,7 @@ class FCN32VGG:
         self.global_step = tf.Variable(0, name = 'global_step', trainable = False)
         with tf.name_scope('Processing'):
 
-            blue, green, red = tf.split(bgr, 3, 3)
+            blue, green, red = tf.split(self.im_input, 3, 3)
             # assert red.get_shape().as_list()[1:] == [224, 224, 1]
             # assert green.get_shape().as_list()[1:] == [224, 224, 1]
             # assert blue.get_shape().as_list()[1:] == [224, 224, 1]
@@ -123,11 +126,11 @@ class FCN32VGG:
 
         self.pred_up = tf.argmax(self.upscore, dimension=3)
 
-    def loss(self, labels, lr, apply_grads_flag, head = None):
+    def loss(self, lr, head = None):
         #labels is a tf.placeholder [batch, width, height]
         with tf.name_scope('loss'):
             epsilon = tf.constant(value=1e-4)
-            self.labels = tf.one_hot(labels, self.num_classes)
+            self.labels = tf.one_hot(self.seg_label, self.num_classes)
 
             softmax = tf.nn.softmax(self.upscore) + epsilon
 
@@ -151,7 +154,7 @@ class FCN32VGG:
 
             placeholder_op = lambda: tf.no_op()
 
-            self.train_op = tf.cond(tf.equal(apply_grads_flag, 1), self.optimize, placeholder_op)
+            self.train_op = tf.cond(tf.equal(self.apply_grads_flag, 1), self.optimize, placeholder_op)
 
     def optimize(self):
         #accumulate gradients

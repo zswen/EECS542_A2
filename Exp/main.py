@@ -7,6 +7,7 @@ import tensorflow as tf
 
 from train import *
 from config import *
+import pdb
 
 mutex = Lock()
 cv_empty = Condition(mutex)
@@ -18,7 +19,7 @@ def getIndex(split):
 		print 'wrong split name, enter train|val'
 	f = open(os.path.join(data_split_root, split + '.txt'))
 	names = f.readlines()
-	return names
+	return [name[0: -1] for name in names]
 
 def main():
 	#create network
@@ -27,11 +28,8 @@ def main():
 					  log_device_placement = False))
 	net = FCN32VGG()
 	with tf.device('/cpu: %d' % device_idx): 
-		im_input = tf.placeholder(tf.float32)
-		seg_label = tf.placeholder(tf.int32)
-		apply_grads_flag = tf.placeholder(tf.int32)
-		net.build(im_input, debug = True)
-		net.loss(seg_label, apply_grads_flag, 1e-4)
+		net.build(debug = True)
+		net.loss(1e-4)
 	init = tf.global_variables_initializer()
 	sess.run(init)
 
@@ -40,23 +38,24 @@ def main():
 	train_ims = getIndex('train')
 
 	#launch data_loader
-	t = threading.Thread(target = loadData, \
-						 args = (train_ims, \
-						 		 train_image_batches, \
-						 		 cv_full, cv_empty))
+	t = threading.Thread(target = loadData,
+						 args = (train_ims,
+						 		 train_image_batches,
+						 		 cv_full, cv_empty,
+						 		 data_loader_capacity))
 	t.daemon = True
 	t.start()
 
 	current_iter = 0
 	#start training
 	while current_iter < max_iter:
-		#print('iter %d', current_iter)
-		if current_iter % 50:
+		print 'iter %d' % current_iter
+		if current_iter % 1:
 			silent = False
 		else:
 			silent = True
 		step(sess, net, train_image_batches, cv_empty, cv_full, silent)
-
+		current_iter += 1
 	return
 
 if __name__ == '__main__':
