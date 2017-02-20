@@ -55,7 +55,7 @@ def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
 						  			   	   				net.apply_grads_flag: int(idx == len(image_inputs) - 1)})
 	net.done_optimize()
 	if not silent:
-		print 'segmentation loss:', loss
+		print('segmentation loss:', loss)
 	return
 
 def main():
@@ -78,7 +78,7 @@ def main():
 						  				   feed_dict = {im_input: np.array([test_img]),
 						  			   	   				seg_label: np.array([test_label]),
 						  			   	   				apply_grads_flag: idx % 2})
-	print loss
+	print(loss)
 	cv2.imwrite('test.png', prediction[0, ...])
 	return
 

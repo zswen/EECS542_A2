@@ -62,7 +62,7 @@ class FCN32VGG:
         self.global_step = tf.Variable(0, name = 'global_step', trainable = False)
         with tf.name_scope('Processing'):
 
-            blue, green, red = tf.split(self.im_input, 3, 3)
+            blue, green, red = tf.split(self.im_input, 3, 3) 
             # assert red.get_shape().as_list()[1:] == [224, 224, 1]
             # assert green.get_shape().as_list()[1:] == [224, 224, 1]
             # assert blue.get_shape().as_list()[1:] == [224, 224, 1]

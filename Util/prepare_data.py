@@ -2,6 +2,9 @@ import os
 import cv2
 import xml.etree.ElementTree as et
 import numpy as np
+import sys
+sys.path.append('../Exp')
+from config import *
 
 #return list of label masks, since size may not match
 def getSegLabel(image_names, color2class, dir_name):
@@ -40,20 +43,17 @@ def testLabel(image_names, annotation_root, image_root, \
 	segmentationLabels = getSegLabel(image_names, color2Idx, segmentation_root)
 	assert detectionLabels.shape[0] == len(segmentationLabels)
 	for idx in range(detectionLabels.shape[0]):
-		print 'image:', image_names[idx]
+		print('image:', image_names[idx])
 		from_exist = (detectionLabels[idx, :] + 1).nonzero()[0]
-		print 'existence says this image has    ',
-		print [idx2ClassName[it] for it in from_exist]
-		print segmentationLabels[idx]
-		print 'segmentation says this image has ',
-		print [idx2ClassName[it] for it in seg]
-		print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
+		print('existence says this image has    ',)
+		print([idx2ClassName[it] for it in from_exist])
+		print(segmentationLabels[idx])
+		print('segmentation says this image has ',)
+		print([idx2ClassName[it] for it in seg])
+		print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
 	return
 
 def main():
-	import sys
-	sys.path.append('../Exp')
-	from config import *
 	image_names = ['2007_000032', '2007_000033', '2007_000039', '2007_000068', '2007_000170']
 	testLabel(image_names, annotation_root, image_root, segmentation_root, 
 			  className2Idx, color2Idx, idx2ClassName)
