@@ -4,3 +4,4 @@ tensorflow-fcn/*
 */vgg16.npy
 .DS_Store
 *.pyc
+sftp-config.json
