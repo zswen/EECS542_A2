@@ -49,11 +49,7 @@ def main():
 	current_iter = 0
 	#start training
 	while current_iter < max_iter:
-<<<<<<< HEAD
-		print 'iter %d' % current_iter
-=======
 		print('iter %d' % current_iter)
->>>>>>> deeplearn
 		if current_iter % 1 == 0:
 			silent = False
 		else:
