@@ -24,12 +24,13 @@ def getIndex(split):
 def main():
 	
 	#set device
-	if len(sys.argv) != 2 or \
-		(sys.argv[0] != 'cpu' and sys.argv[0] != 'gpu'):
+	if len(sys.argv) != 3 or \
+		(sys.argv[1] != 'cpu' and sys.argv[1] != 'gpu'):
 		print('wrong arguments, <cpu|gpu> <device_idx(integer)> ')
+		return
 	
-	device = sys.argv[0]
-	device_idx = int(sys.argv[1])
+	device = sys.argv[1]
+	device_idx = int(sys.argv[2])
 
 	#create network
 	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, 
@@ -37,7 +38,7 @@ def main():
 	net = FCN32VGG()
 	with tf.device('/%s: %d' % (device, device_idx)): 
 		net.build(debug = True)
-		net.loss(1e-4)
+		net.loss(learning_rate)
 	init = tf.global_variables_initializer()
 	sess.run(init)
 
@@ -45,6 +46,11 @@ def main():
 	valid_ims = getIndex('val')
 	train_ims = getIndex('train')
 
+	#loadData(train_ims, 
+	#		 train_image_batches,
+	#		 cv_full, cv_empty,
+	#		 data_loader_capacity)
+	
 	#launch data_loader
 	t = threading.Thread(target = loadData,
 						 args = (train_ims,
@@ -65,6 +71,7 @@ def main():
 		step(sess, net, train_image_batches, cv_empty, cv_full, silent)
 		current_iter += 1
 	return
+	
 
 if __name__ == '__main__':
 	main()

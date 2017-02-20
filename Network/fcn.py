@@ -11,10 +11,12 @@ import numpy as np
 import tensorflow as tf
 import pdb
 
+from base import Model
+
 VGG_MEAN = [103.939, 116.779, 123.68]
 
 
-class FCN32VGG:
+class FCN32VGG(Model):
 
     def __init__(self, vgg16_npy_path=None):
         if vgg16_npy_path is None:
