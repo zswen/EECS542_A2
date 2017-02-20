@@ -22,12 +22,20 @@ def getIndex(split):
 	return [name[0: -1] for name in names]
 
 def main():
+	
+	#set device
+	if len(sys.argv) != 2 or \
+		(sys.argv[0] != 'cpu' and sys.argv[0] != 'gpu'):
+		print('wrong arguments, <cpu|gpu> <device_idx(integer)> ')
+	
+	device = sys.argv[0]
+	device_idx = int(sys.argv[1])
+
 	#create network
-	device_idx = 2
 	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, 
 					  log_device_placement = False))
 	net = FCN32VGG()
-	with tf.device('/gpu: %d' % device_idx): 
+	with tf.device('/%s: %d' % (device, device_idx)): 
 		net.build(debug = True)
 		net.loss(1e-4)
 	init = tf.global_variables_initializer()
