@@ -50,7 +50,7 @@ def main():
 	#start training
 	while current_iter < max_iter:
 		print 'iter %d' % current_iter
-		if current_iter % 1:
+		if current_iter % 1 == 0:
 			silent = False
 		else:
 			silent = True
