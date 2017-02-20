@@ -23,11 +23,11 @@ def getIndex(split):
 
 def main():
 	#create network
-	device_idx = 0
+	device_idx = 2
 	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, 
 					  log_device_placement = False))
 	net = FCN32VGG()
-	with tf.device('/cpu: %d' % device_idx): 
+	with tf.device('/gpu: %d' % device_idx): 
 		net.build(debug = True)
 		net.loss(1e-4)
 	init = tf.global_variables_initializer()
@@ -50,7 +50,7 @@ def main():
 	#start training
 	while current_iter < max_iter:
 		print 'iter %d' % current_iter
-		if current_iter % 1:
+		if current_iter % 1 == 0:
 			silent = False
 		else:
 			silent = True

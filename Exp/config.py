@@ -1,8 +1,8 @@
 import numpy as np
 from collections import OrderedDict
 
-batch_size = 2
-data_loader_capacity = 2
+batch_size = 64
+data_loader_capacity = 5
 max_iter = float('inf')
 
 image_root = '../TrainVal/VOCdevkit/VOC2011/JPEGImages'
