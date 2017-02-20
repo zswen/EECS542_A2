@@ -1,9 +1,13 @@
 import numpy as np
 from collections import OrderedDict
 
+batch_size = 128
+max_iter = float('inf')
+
 image_root = '../TrainVal/VOCdevkit/VOC2011/JPEGImages'
 annotation_root = '../TrainVal/VOCdevkit/VOC2011/Annotations'
 segmentation_root = '../TrainVal/VOCdevkit/VOC2011/SegmentationClass'
+data_split_root = '../TrainVal/VOCdevkit/VOC2011/ImageSets/Segmentation'
 
 className2Idx = OrderedDict(
 	   {'aeroplane':1, 

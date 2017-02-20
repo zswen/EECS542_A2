@@ -1,15 +1,63 @@
 import tensorflow as tf
 import sys
 import os
-sys.path.append('../Network')
-
 import numpy as np
-from fcn import FCN32VGG
 import cv2
+from random import shuffle
+sys.path.append('../Util')
+from prepare_data import getSegLabel, getDetectionLabel
+
+sys.path.append('../Network')
+from fcn import FCN32VGG
+
 from config import *
 import pdb
 
-def step(sess, net, image_inputs, image_outputs):
+#image_names: ['2007_000032'], not include suffices
+#data_loader: [{'images': [], 'label_masks': []}]
+def loadData(all_image_names, data_loader, cv_full, cv_empty, data_loader_capacity = 10):
+	
+	batch_current = 0
+	while True:
+		cv_full.acquire()
+		while len(data_loader) >= data_loader_capacity:
+			cv_full.wait()
+		images = []
+		labels = []
+		image_names = all_image_names[batch_current * batch_size: (batch_current + 1) * batch_size]
+		batch_current += 1
+		for name in image_names:
+			print name
+			label_mask = getSegLabel(name, color2Idx, segmentation_root)
+			image = cv2.imread(os.path.join(image_root, name + '.jpg'))
+			images.append(image)
+			labels.append(label_mask)
+		data_loader.append({'images': images, 'label_masks': labels})
+		cv_empty.signal()
+		cv_full.release()
+		if batch_size * batch_current >= len(all_image_names):
+			batch_current = 0
+			random.shuffle(all_image_names)
+
+#image_inputs: list of images [[w, h, c], ...]
+#image_labels: list of images [[w, h, c], ...]
+def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
+	cv_empty.acquire()
+	while len(data_loader) == 0:
+		cv_empty.wait()
+	data = data_loader.pop(0)
+	image_inputs = data['images']
+	image_labels = data['label_masks']
+	cv_full.signal()
+	cv_empty.release()
+	assert len(image_inputs) == len(image_labels)
+	for idx in enumerate(image_inputs):
+		[loss, _] = sess.run([net.loss, net.train_op], \
+						  				   feed_dict = {im_input: np.array([image_inputs[idx]]),
+						  			   	   				seg_label: np.array([image_labels[idx]]),
+						  			   	   				apply_grads_flag: int(idx == len(image_inputs) - 1)})
+	if not silent:
+		print 'segmentation loss:', loss
 	return
 
 def main():
@@ -23,20 +71,18 @@ def main():
 	with tf.device('/cpu: %d' % device_idx): 
 		im_input = tf.placeholder(tf.float32)
 		seg_label = tf.placeholder(tf.int32)
+		apply_grads_flag = tf.placeholder(tf.int32)
 		net.build(im_input, debug = True)
-		net.loss(seg_label, 1e-4)
+		net.loss(seg_label, apply_grads_flag, 1e-4)
 	init = tf.global_variables_initializer()
 	sess.run(init)
-	for f in ['2007_000032', '2007_000033']:
+	for idx, f in enumerate(['2007_000032', '2007_000033']):
 		test_img = cv2.imread(os.path.join(image_root, f + '.jpg'))
 		test_label = getSegLabel([f], color2Idx, segmentation_root)
-		[prediction, loss, gradients] = sess.run([net.pred_up, net.loss, net.gradients], \
+		[prediction, loss, _] = sess.run([net.pred_up, net.loss, net.train_op], \
 						  				   feed_dict = {im_input: np.array([test_img]),
-						  			   	   				seg_label: np.array([test_label])})
-		net.gradients_pool.append(net.gradients)
-	net.optimize()
-	sess.run([net.train_opt])
-	pdb.set_trace()
+						  			   	   				seg_label: np.array([test_label]),
+						  			   	   				apply_grads_flag: idx % 2})
 	print loss
 	cv2.imwrite('test.png', prediction[0, ...])
 	return

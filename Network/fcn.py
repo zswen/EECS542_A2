@@ -123,7 +123,7 @@ class FCN32VGG:
 
         self.pred_up = tf.argmax(self.upscore, dimension=3)
 
-    def loss(self, labels, lr, head = None):
+    def loss(self, labels, lr, apply_grads_flag, head = None):
         #labels is a tf.placeholder [batch, width, height]
         with tf.name_scope('loss'):
             epsilon = tf.constant(value=1e-4)
@@ -147,6 +147,11 @@ class FCN32VGG:
             #optimizer of the net
             self.opt = tf.train.MomentumOptimizer(lr, 0.9)
             self.gradients = self.opt.compute_gradients(self.loss)
+            self.gradients_pool.append(self.gradients)
+
+            placeholder_op = lambda: tf.no_op()
+
+            self.train_op = tf.cond(tf.equal(apply_grads_flag, 1), self.optimize, placeholder_op)
 
     def optimize(self):
         #accumulate gradients
@@ -159,8 +164,8 @@ class FCN32VGG:
             grad_and_var = (grad, v)
             self.average_grads.append(grad_and_var)
 
-        self.train_opt = self.opt.apply_gradients(self.average_grads, 
-                                global_step = self.global_step)
+        return self.opt.apply_gradients(self.average_grads, 
+                                        global_step = self.global_step)
 
     def done_optimize(self):
         self.average_grads = []
@@ -276,7 +281,7 @@ class FCN32VGG:
 
     def get_deconv_filter(self, f_shape):
         width = f_shape[0]
-        heigh = f_shape[0]
+        heigh = f_shape[1]
         f = ceil(width/2.0)
         c = (2 * f - 1 - f % 2) / (2.0 * f)
         bilinear = np.zeros([f_shape[0], f_shape[1]])
