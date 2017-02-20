@@ -10,8 +10,7 @@ annotation_root = '../TrainVal/VOCdevkit/VOC2011/Annotations'
 segmentation_root = '../TrainVal/VOCdevkit/VOC2011/SegmentationClass'
 data_split_root = '../TrainVal/VOCdevkit/VOC2011/ImageSets/Segmentation'
 
-className2Idx = OrderedDict(
-	   {'aeroplane':1, 
+className2Idx = {'aeroplane':1, 
 		'bicycle':2, 
 		'bird':3, 
 		'boat':4, 
@@ -31,11 +30,10 @@ className2Idx = OrderedDict(
 		'sofa':18, 
 		'train':19, 
 		'tvmonitor':20
-		})
-idx2ClassName = {v: k for k, v in className2Idx.iteritems()}
+		}
+idx2ClassName = {v: k for k, v in className2Idx.items()}
 
-color2Idx = OrderedDict(
-		{(0, 0, 128): 1,
+color2Idx = {(0, 0, 128): 1,
 		 (0, 128, 0): 2,
 		 (0, 128, 128): 3,
 		 (128, 0, 0): 4,
@@ -56,6 +54,6 @@ color2Idx = OrderedDict(
 		 (0, 192, 128): 19,
 		 (128, 64, 0): 20,
 		 (192, 224, 224): 21
-		})
+		}
 
-idx2Color = {v: k for k, v in color2Idx.iteritems()}
+idx2Color = {v: k for k, v in color2Idx.items()}

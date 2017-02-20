@@ -16,7 +16,7 @@ train_image_batches = []
 
 def getIndex(split):
 	if split != 'train' and split != 'val':
-		print 'wrong split name, enter train|val'
+		print('wrong split name, enter train|val')
 	f = open(os.path.join(data_split_root, split + '.txt'))
 	names = f.readlines()
 	return [name[0: -1] for name in names]
@@ -49,7 +49,7 @@ def main():
 	current_iter = 0
 	#start training
 	while current_iter < max_iter:
-		print 'iter %d' % current_iter
+		print('iter %d' % current_iter)
 		if current_iter % 1 == 0:
 			silent = False
 		else:
