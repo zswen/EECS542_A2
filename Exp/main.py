@@ -33,16 +33,7 @@ def main():
 	
 	device = sys.argv[1]
 	device_idx = int(sys.argv[2])
-
-	#create network
-	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, 
-					  log_device_placement = False))
-	net = FCN32VGG()
-	with tf.device('/%s: %d' % (device, device_idx)): 
-		net.build(debug = True)
-		net.loss(learning_rate)
-	init = tf.global_variables_initializer()
-	sess.run(init)
+<<<<<<< HEAD
 
 	#get data split
 	valid_ims = getIndex('val')
@@ -62,7 +53,41 @@ def main():
 			 				data_loader_capacity))
 		P.start()
 		processors.append(P)
+=======
+>>>>>>> baeaa7d6c3937121be5f78eb51a74414705dc489
 
+	#create network
+	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, 
+					  log_device_placement = False))
+	net = FCN32VGG()
+	with tf.device('/%s: %d' % (device, device_idx)): 
+		net.build(debug = True)
+		net.loss(learning_rate)
+	init = tf.global_variables_initializer()
+	sess.run(init)
+
+<<<<<<< HEAD
+=======
+	#get data split
+	valid_ims = getIndex('val')
+	train_ims = getIndex('train')
+
+	batch_current = manager.list([0])
+	
+	#launch data_loader
+	processors = []
+	for _ in range(num_processor):
+		P = Process(target = loadData,
+					args = (train_ims,
+			 				train_image_batches, 
+			 				batch_current,
+			 				batch_lock, 
+			 				cv_full, cv_empty,
+			 				data_loader_capacity))
+		P.start()
+		processors.append(P)
+
+>>>>>>> baeaa7d6c3937121be5f78eb51a74414705dc489
 	current_iter = 0
 	#start training
 	while current_iter < max_iter:

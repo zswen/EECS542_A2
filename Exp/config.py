@@ -1,7 +1,11 @@
 import numpy as np
 from collections import OrderedDict
 
+<<<<<<< HEAD
+batch_size = 16
+=======
 batch_size = 32
+>>>>>>> baeaa7d6c3937121be5f78eb51a74414705dc489
 data_loader_capacity = 10
 max_iter = float('inf')
 learning_rate = 1e-5

@@ -17,12 +17,13 @@ def getSubbatch(images, image_labels, similar_thred = 20):
 	for cluster in clusters:
 		if len(cluster) > 1:
 			ideal_size = np.median(cluster, axis = 0)
+			ideal_size = [int(i) for i in ideal_size]
 			subbatch_im = []
 			subbatch_label = []
 			for img in cluster:
 				if img[0] != ideal_size[0] or img[1] != ideal_size[1]:
-					subbatch_im.append(cv2.resize(images[img[2]]), ideal_size[1], ideal_size[0])
-					subbatch_label.append(cv2.resize(image_labels[img[2]]), ideal_size[1], ideal_size[0])
+					subbatch_im.append(cv2.resize(images[img[2]], (ideal_size[1], ideal_size[0])))
+					subbatch_label.append(cv2.resize(image_labels[img[2]], (ideal_size[1], ideal_size[0])))
 				else:
 					subbatch_im.append(images[img[2]])
 					subbatch_label.append(image_labels[img[2]])
@@ -31,6 +32,7 @@ def getSubbatch(images, image_labels, similar_thred = 20):
 		else:
 			subbatches.append({'images': np.array([images[cluster[0][2]]]), 
 							   'labels': np.array([image_labels[cluster[0][2]]])})
+	print([subbatch['images'].shape[0] for subbatch in subbatches])
 	return subbatches
 
 
