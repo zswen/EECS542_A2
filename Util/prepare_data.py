@@ -3,14 +3,35 @@ import cv2
 import xml.etree.ElementTree as et
 import numpy as np
 import sys
-from collections import defaultDict
 sys.path.append('../Exp')
 from config import *
 import pdb
 
-def getSubbatch(images, image_labels, similar_thred = 10):
-	subbatches = {}
+from cluster import HierarchicalClustering
 
+def getSubbatch(images, image_labels, similar_thred = 20):
+	sizes = [(image.shape[0], image.shape[1], idx) for idx, image in enumerate(images)]
+	cl = HierarchicalClustering(sizes, lambda x, y: abs(x[0] - y[0]) + abs(x[1] - y[1]))
+	clusters = cl.getlevel(similar_thred)
+	subbatches = []
+	for cluster in clusters:
+		if len(cluster) > 1:
+			ideal_size = np.median(cluster, axis = 0)
+			subbatch_im = []
+			subbatch_label = []
+			for img in cluster:
+				if img[0] != ideal_size[0] or img[1] != ideal_size[1]:
+					subbatch_im.append(cv2.resize(images[img[2]]), ideal_size[1], ideal_size[0])
+					subbatch_label.append(cv2.resize(image_labels[img[2]]), ideal_size[1], ideal_size[0])
+				else:
+					subbatch_im.append(images[img[2]])
+					subbatch_label.append(image_labels[img[2]])
+			subbatches.append({'images': np.array(subbatch_im), 
+							   'labels': np.array(subbatch_label)})
+		else:
+			subbatches.append({'images': np.array([images[cluster[0][2]]]), 
+							   'labels': np.array([image_labels[cluster[0][2]]])})
+	return subbatches
 
 
 #return list of label masks, since size may not match
