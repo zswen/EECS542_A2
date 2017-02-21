@@ -1,10 +1,10 @@
 import numpy as np
 from collections import OrderedDict
 
-learning_rate = 1e-5
+learning_rate = 1e-4
 batch_size = 16
 data_loader_capacity = 10
-resize_threshold = 40
+resize_threshold = 500
 max_iter = float('inf')
 num_processor = 2
 

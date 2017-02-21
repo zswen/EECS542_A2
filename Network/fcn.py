@@ -152,11 +152,13 @@ class FCN32VGG(Model):
             #optimizer of the net
             self.opt = tf.train.MomentumOptimizer(lr, 0.9)
             self.gradients = self.opt.compute_gradients(self.loss)
-            self.gradients_pool.append(self.gradients)
+            #self.gradients_pool.append(self.gradients)
 
-            placeholder_op = lambda: tf.no_op()
+            self.train_op = self.opt.apply_gradients(self.gradients, 
+                                        global_step = self.global_step)
+            #placeholder_op = lambda: tf.no_op()
 
-            self.train_op = tf.cond(tf.equal(self.apply_grads_flag, 1), self.optimize, placeholder_op)
+            #self.train_op = tf.cond(tf.equal(self.apply_grads_flag, 1), self.optimize, placeholder_op)
 
     def optimize(self):
         #accumulate gradients
