@@ -1,25 +1,27 @@
 import os
 import sys
 import cv2
-from threading import Condition, Lock
-import threading
+from multiprocessing import Condition, Lock, Process, Manager
 import tensorflow as tf
 
 from train import *
 from config import *
 import pdb
 
+#multiprocess objects
+manager = Manager()
+batch_lock = Lock()
 mutex = Lock()
 cv_empty = Condition(mutex)
 cv_full = Condition(mutex)
-train_image_batches = []
+train_image_batches = manager.list()
 
 def getIndex(split):
 	if split != 'train' and split != 'val':
 		print('wrong split name, enter train|val')
 	f = open(os.path.join(data_split_root, split + '.txt'))
 	names = f.readlines()
-	return [name[0: -1] for name in names]
+	return manager.list([name[0: -1] for name in names])
 
 def main():
 	
@@ -46,19 +48,18 @@ def main():
 	valid_ims = getIndex('val')
 	train_ims = getIndex('train')
 
-	#loadData(train_ims, 
-	#		 train_image_batches,
-	#		 cv_full, cv_empty,
-	#		 data_loader_capacity)
+	batch_current = manager.list([0])
 	
 	#launch data_loader
-	t = threading.Thread(target = loadData,
-						 args = (train_ims,
-						 		 train_image_batches,
-						 		 cv_full, cv_empty,
-						 		 data_loader_capacity))
-	t.daemon = True
-	t.start()
+	for _ in range(num_processor):
+		P = Process(target = loadData,
+					args = (train_ims,
+			 				train_image_batches, 
+			 				batch_current,
+			 				batch_lock, 
+			 				cv_full, cv_empty,
+			 				data_loader_capacity))
+		P.start()
 
 	current_iter = 0
 	#start training

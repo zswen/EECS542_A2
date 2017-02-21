@@ -18,13 +18,15 @@ import pdb
 
 #image_names: ['2007_000032'], not include suffices
 #data_loader: [{'images': [], 'label_masks': []}]
-def loadData(all_image_names, data_loader, cv_full, cv_empty, data_loader_capacity = 10):
-	batch_current = 0
+def loadData(all_image_names, data_loader, batch_current, \
+			 batch_lock, cv_full, cv_empty, data_loader_capacity = 10):
 	while True:
-		print('size of loader:', len(data_loader))
 		images = []
-		image_names = all_image_names[batch_current * batch_size: (batch_current + 1) * batch_size]
-		batch_current += 1
+		batch_lock.acquire()
+		image_names = all_image_names[batch_current[0] * batch_size: (batch_current[0] + 1) * batch_size]
+		batch_current[0] = batch_current[0] + 1
+		print('batch: %d, size of loader: %d' % (batch_current[0], len(data_loader)))
+		batch_lock.release()
 		label_masks = getSegLabel(image_names, color2Idx, segmentation_root)
 		for name in image_names:
 			image = cv2.imread(os.path.join(image_root, name + '.jpg'))
@@ -38,9 +40,11 @@ def loadData(all_image_names, data_loader, cv_full, cv_empty, data_loader_capaci
 		cv_empty.notify()
 		cv_full.release()
 
-		if batch_size * batch_current >= len(all_image_names):
-			batch_current = 0
-			random.shuffle(all_image_names)
+		batch_lock.acquire()
+		if batch_size * batch_current[0] >= len(all_image_names):
+			batch_current[0] = 0
+			shuffle(all_image_names)
+		batch_lock.release()
 
 #image_inputs: list of images [[w, h, c], ...]
 #image_labels: list of images [[w, h, c], ...]
