@@ -5,3 +5,4 @@ tensorflow-fcn/*
 .DS_Store
 *.pyc
 sftp-config.json
+*/__pycache__/*

@@ -1,11 +1,14 @@
 import os
 import sys
 import cv2
+import time
 from multiprocessing import Condition, Lock, Process, Manager
 import tensorflow as tf
 
 from train import *
 from config import *
+sys.path.append('../Util')
+from debug import loadDataOneThread
 import pdb
 
 #multiprocess objects
@@ -14,7 +17,8 @@ batch_lock = Lock()
 mutex = Lock()
 cv_empty = Condition(mutex)
 cv_full = Condition(mutex)
-train_image_batches = manager.list()
+#train_image_batches = manager.list()
+train_image_batches = []
 
 def getIndex(split):
 	if split != 'train' and split != 'val':
@@ -38,9 +42,11 @@ def main():
 	valid_ims = getIndex('val')
 	train_ims = getIndex('train')
 
-	batch_current = manager.list([0])
+	#batch_current = manager.list([0])
+	batch_current = [0]
 	
 	#launch data_loader
+	'''
 	processors = []
 	for _ in range(num_processor):
 		P = Process(target = loadData,
@@ -49,9 +55,11 @@ def main():
 			 				batch_current,
 			 				batch_lock, 
 			 				cv_full, cv_empty,
-			 				data_loader_capacity))
+			 				data_loader_capacity,
+			 				resize_threshold))
 		P.start()
 		processors.append(P)
+	'''
 
 	#create network
 	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, 
@@ -66,13 +74,16 @@ def main():
 	current_iter = 0
 	#start training
 	while current_iter < max_iter:
+		t0 = time.clock()
 		print('iter %d' % current_iter)
 		if current_iter % 1 == 0:
 			silent = False
 		else:
 			silent = True
+		loadDataOneThread(train_ims, train_image_batches, batch_current, resize_threshold)
 		step(sess, net, train_image_batches, cv_empty, cv_full, silent)
 		current_iter += 1
+		print('[*] iter timing: %d' % (time.clock() - t0))
 	return
 	
 
