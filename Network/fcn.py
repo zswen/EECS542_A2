@@ -155,7 +155,8 @@ class FCN32VGG(Model):
             #self.gradients_pool.append(self.gradients)
 
             self.train_op = self.opt.apply_gradients(self.gradients, 
-                                        global_step = self.global_step)
+                                       global_step = self.global_step)
+            
             #placeholder_op = lambda: tf.no_op()
 
             #self.train_op = tf.cond(tf.equal(self.apply_grads_flag, 1), self.optimize, placeholder_op)
@@ -177,7 +178,6 @@ class FCN32VGG(Model):
     def done_optimize(self):
         self.average_grads = []
         self.gradients_pool = []
-
 
     def _max_pool(self, bottom, name, debug):
         pool = tf.nn.max_pool(bottom, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],

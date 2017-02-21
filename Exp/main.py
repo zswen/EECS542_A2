@@ -1,6 +1,7 @@
 import os
 import sys
 import cv2
+from random import shuffle
 import time
 from multiprocessing import Condition, Lock, Process, Manager
 import tensorflow as tf
@@ -17,8 +18,7 @@ batch_lock = Lock()
 mutex = Lock()
 cv_empty = Condition(mutex)
 cv_full = Condition(mutex)
-#train_image_batches = manager.list()
-train_image_batches = []
+train_image_batches = manager.list()
 
 def getIndex(split):
 	if split != 'train' and split != 'val':
@@ -41,12 +41,12 @@ def main():
 	#get data split
 	valid_ims = getIndex('val')
 	train_ims = getIndex('train')
+	shuffle(train_ims)
 
-	#batch_current = manager.list([0])
-	batch_current = [0]
+	batch_current = manager.list([0])
 	
 	#launch data_loader
-	'''
+	
 	processors = []
 	for _ in range(num_processor):
 		P = Process(target = loadData,
@@ -59,14 +59,14 @@ def main():
 			 				resize_threshold))
 		P.start()
 		processors.append(P)
-	'''
+	
 
 	#create network
 	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, 
 					  log_device_placement = False))
 	net = FCN32VGG()
 	with tf.device('/%s: %d' % (device, device_idx)): 
-		net.build(debug = True)
+		net.build()
 		net.loss(learning_rate)
 	init = tf.global_variables_initializer()
 	sess.run(init)
@@ -75,15 +75,15 @@ def main():
 	#start training
 	while current_iter < max_iter:
 		t0 = time.clock()
-		print('iter %d' % current_iter)
+		print('iter %d' % (current_iter + 1))
 		if current_iter % 1 == 0:
 			silent = False
 		else:
 			silent = True
-		loadDataOneThread(train_ims, train_image_batches, batch_current, resize_threshold)
+		#loadDataOneThread(train_ims, train_image_batches, batch_current, resize_threshold)
 		step(sess, net, train_image_batches, cv_empty, cv_full, silent)
 		current_iter += 1
-		print('[*] iter timing: %d' % (time.clock() - t0))
+		print('[*][*] iter timing: %d' % (time.clock() - t0))
 	return
 	
 

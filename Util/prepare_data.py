@@ -11,7 +11,6 @@ import time
 from cluster import HierarchicalClustering
 
 def getSubbatch(images, image_labels, similar_thred):
-	t0 = time.clock()
 	sizes = [(image.shape[0], image.shape[1], idx) for idx, image in enumerate(images)]
 	cl = HierarchicalClustering(sizes, lambda x, y: abs(x[0] - y[0]) + abs(x[1] - y[1]))
 	clusters = cl.getlevel(similar_thred)
@@ -20,7 +19,6 @@ def getSubbatch(images, image_labels, similar_thred):
 		if len(cluster) > 1:
 			ideal_size = np.median(cluster, axis = 0)
 			ideal_size = [int(i) for i in ideal_size]
-			print(ideal_size)
 			subbatch_im = []
 			subbatch_label = []
 			for img in cluster:
@@ -35,14 +33,11 @@ def getSubbatch(images, image_labels, similar_thred):
 		else:
 			subbatches.append({'images': np.array([images[cluster[0][2]]]), 
 							   'labels': np.array([image_labels[cluster[0][2]]])})
-	print([subbatch['images'].shape[0] for subbatch in subbatches])
-	print('subbatch timing:%d' % (time.clock() - t0))
 	return subbatches
 
 
 #return list of label masks, since size may not match
 def getSegLabel(image_names, color2class, dir_name):
-	t0 = time.clock()
 	labels = []
 	for idx, name in enumerate(image_names):
 		name = name + '.png'
@@ -55,7 +50,6 @@ def getSegLabel(image_names, color2class, dir_name):
 			label[cor, objects_idx[1][idx]] = \
 			color2class[tuple(img[cor, objects_idx[1][idx], :])]
 		labels.append(label)
-	print('seglabel timing:%d' % (time.clock() - t0))
 	return labels
 
 #0~20 classes, 0 for background, return a matrix, with an image in a row

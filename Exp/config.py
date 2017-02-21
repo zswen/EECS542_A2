@@ -6,7 +6,7 @@ batch_size = 16
 data_loader_capacity = 10
 resize_threshold = 500
 max_iter = float('inf')
-num_processor = 2
+num_processor = 4
 
 image_root = '../TrainVal/VOCdevkit/VOC2011/JPEGImages'
 annotation_root = '../TrainVal/VOCdevkit/VOC2011/Annotations'

@@ -58,16 +58,17 @@ def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
 	cv_full.notify()
 	cv_empty.release()
 
-	t0 = time.clock()
 	for idx, subbatch in enumerate(subbatches):
+		t0 = time.clock()
+		print('Num images in subbatch:', subbatch['images'].shape)
 		[loss, _] = sess.run([net.loss, net.train_op], \
 			  				  feed_dict = {net.im_input: np.array(subbatch['images']),
 			  			   	   			   net.seg_label: np.array(subbatch['labels']),
 			  			   	   			   net.apply_grads_flag: int(idx == len(subbatches) - 1)})
+		print('[*]batch time: %d' % (time.clock() - t0))
 	net.done_optimize()
-	print('batch time: %d' % (time.clock() - t0), )
 	if not silent:
-		print('[*][*]segmentation loss:', loss)
+		print('[$][$]segmentation loss:', loss)
 	return
 
 def main():
