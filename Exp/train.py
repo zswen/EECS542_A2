@@ -19,22 +19,14 @@ import pdb
 #image_names: ['2007_000032'], not include suffices
 #data_loader: [{'images': [], 'label_masks': []}]
 def loadData(all_image_names, data_loader, batch_current, \
-			 batch_lock, cv_full, cv_empty, data_loader_capacity = 10):
+			 batch_lock, cv_full, cv_empty, \
+			 data_loader_capacity = 10, resize_threshold = 20):
 	while True:
 		images = []
-<<<<<<< HEAD
-
-=======
->>>>>>> baeaa7d6c3937121be5f78eb51a74414705dc489
 		batch_lock.acquire()
 		image_names = all_image_names[batch_current[0] * batch_size: (batch_current[0] + 1) * batch_size]
 		batch_current[0] = batch_current[0] + 1
-		print('batch: %d, size of loader: %d' % (batch_current[0], len(data_loader)))
 		batch_lock.release()
-<<<<<<< HEAD
-
-=======
->>>>>>> baeaa7d6c3937121be5f78eb51a74414705dc489
 		label_masks = getSegLabel(image_names, color2Idx, segmentation_root)
 		for name in image_names:
 			image = cv2.imread(os.path.join(image_root, name + '.jpg'))
@@ -44,11 +36,7 @@ def loadData(all_image_names, data_loader, batch_current, \
 		cv_full.acquire()
 		while len(data_loader) >= data_loader_capacity:
 			cv_full.wait()
-<<<<<<< HEAD
-		data_loader.append(getSubbatch(images, label_masks))
-=======
-		data_loader.append({'images': images, 'label_masks': label_masks})
->>>>>>> baeaa7d6c3937121be5f78eb51a74414705dc489
+		data_loader.append(getSubbatch(images, label_masks, resize_threshold))
 		cv_empty.notify()
 		cv_full.release()
 
@@ -63,12 +51,9 @@ def loadData(all_image_names, data_loader, batch_current, \
 def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
 	
 	#access shared data
-	print('waiting...')
 	cv_empty.acquire()
 	while len(data_loader) == 0:
 		cv_empty.wait()
-	print('gpu start')
-<<<<<<< HEAD
 	subbatches = data_loader.pop(0)
 	cv_full.notify()
 	cv_empty.release()
@@ -78,24 +63,9 @@ def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
 		[loss, _] = sess.run([net.loss, net.train_op], \
 			  				  feed_dict = {net.im_input: np.array(subbatch['images']),
 			  			   	   			   net.seg_label: np.array(subbatch['labels']),
-=======
-	data = data_loader.pop(0)
-	cv_full.notify()
-	cv_empty.release()
-
-	image_inputs = data['images']
-	image_labels = data['label_masks']
-	assert len(image_inputs) == len(image_labels)
-	subbatches = getSubbatch(image_inputs, image_labels)
-	t0 = time.clock()
-	for idx, subbatch in enumerate(subbatches):
-		[loss, _] = sess.run([net.loss, net.train_op], \
-			  				  feed_dict = {net.im_input: np.array([subbatch['images']]),
-			  			   	   			   net.seg_label: np.array([subbatch['labels']]),
->>>>>>> baeaa7d6c3937121be5f78eb51a74414705dc489
 			  			   	   			   net.apply_grads_flag: int(idx == len(subbatches) - 1)})
 	net.done_optimize()
-	print(time.clock() - t0)
+	print('batch time: %d' % (time.clock() - t0), )
 	if not silent:
 		print('segmentation loss:', loss)
 	return

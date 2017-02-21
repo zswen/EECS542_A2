@@ -9,7 +9,7 @@ import pdb
 
 from cluster import HierarchicalClustering
 
-def getSubbatch(images, image_labels, similar_thred = 20):
+def getSubbatch(images, image_labels, similar_thred):
 	sizes = [(image.shape[0], image.shape[1], idx) for idx, image in enumerate(images)]
 	cl = HierarchicalClustering(sizes, lambda x, y: abs(x[0] - y[0]) + abs(x[1] - y[1]))
 	clusters = cl.getlevel(similar_thred)
@@ -32,7 +32,7 @@ def getSubbatch(images, image_labels, similar_thred = 20):
 		else:
 			subbatches.append({'images': np.array([images[cluster[0][2]]]), 
 							   'labels': np.array([image_labels[cluster[0][2]]])})
-	print([subbatch['images'].shape[0] for subbatch in subbatches])
+	#print([subbatch['images'].shape[0] for subbatch in subbatches])
 	return subbatches
 
 
