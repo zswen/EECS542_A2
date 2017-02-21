@@ -1,9 +1,11 @@
 import numpy as np
 from collections import OrderedDict
 
-batch_size = 64
-data_loader_capacity = 5
+batch_size = 16
+data_loader_capacity = 10
 max_iter = float('inf')
+learning_rate = 1e-5
+num_processor = 1
 
 image_root = '../TrainVal/VOCdevkit/VOC2011/JPEGImages'
 annotation_root = '../TrainVal/VOCdevkit/VOC2011/Annotations'

@@ -11,10 +11,12 @@ import numpy as np
 import tensorflow as tf
 import pdb
 
+from base import Model
+
 VGG_MEAN = [103.939, 116.779, 123.68]
 
 
-class FCN32VGG:
+class FCN32VGG(Model):
 
     def __init__(self, vgg16_npy_path=None):
         if vgg16_npy_path is None:
@@ -38,8 +40,8 @@ class FCN32VGG:
         self.apply_grads_flag = tf.placeholder(tf.int32)
         print("npy file loaded")
 
-    def build(self, train=False, num_classes=20, random_init_fc8=False,
-              debug=False):
+    def build(self, train = False, num_classes = 22, random_init_fc8 = False,
+              debug = False):
         """
         Build the VGG model using loaded weights
         Parameters

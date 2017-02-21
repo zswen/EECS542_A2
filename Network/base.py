@@ -5,8 +5,7 @@ import tensorflow as tf
 class Model(object):
   """Abstract object representing an Reader model."""
   def __init__(self):
-    self.vocab = None
-    self.data = None
+    return
 
   def save(self, checkpoint_dir, dataset_name):
     self.saver = tf.train.Saver()
@@ -26,7 +25,7 @@ class Model(object):
     restore_vars = [var for var in all_vars if var not in new_var]
     self.saver = tf.train.Saver(restore_vars)
     print(" [*] Loading checkpoints...")
-    print dataset_name 
+    print(dataset_name)
     model_dir = dataset_name
     checkpoint_dir = os.path.join(checkpoint_dir, model_dir)
 
