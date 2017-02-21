@@ -3,8 +3,15 @@ import cv2
 import xml.etree.ElementTree as et
 import numpy as np
 import sys
+from collections import defaultDict
 sys.path.append('../Exp')
 from config import *
+import pdb
+
+def getSubbatch(images, image_labels, similar_thred = 10):
+	subbatches = {}
+
+
 
 #return list of label masks, since size may not match
 def getSegLabel(image_names, color2class, dir_name):
@@ -47,9 +54,9 @@ def testLabel(image_names, annotation_root, image_root, \
 		from_exist = (detectionLabels[idx, :] + 1).nonzero()[0]
 		print('existence says this image has    ',)
 		print([idx2ClassName[it] for it in from_exist])
-		print(segmentationLabels[idx])
+		seg = np.unique(segmentationLabels[idx])[1: -1]
 		print('segmentation says this image has ',)
-		print([idx2ClassName[it] for it in seg])
+		print([idx2ClassName[int(it)] for it in seg])
 		print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
 	return
 

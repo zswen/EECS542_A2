@@ -51,9 +51,11 @@ def loadData(all_image_names, data_loader, batch_current, \
 def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
 	
 	#access shared data
+	print('waiting...')
 	cv_empty.acquire()
 	while len(data_loader) == 0:
 		cv_empty.wait()
+	print('gpu start')
 	data = data_loader.pop(0)
 	cv_full.notify()
 	cv_empty.release()
@@ -64,9 +66,9 @@ def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
 	t0 = time.clock()
 	for idx, image_input in enumerate(image_inputs):
 		[loss, _] = sess.run([net.loss, net.train_op], \
-						  				   feed_dict = {net.im_input: np.array([image_input]),
-						  			   	   				net.seg_label: np.array([image_labels[idx]]),
-						  			   	   				net.apply_grads_flag: int(idx == len(image_inputs) - 1)})
+			  				  feed_dict = {net.im_input: np.array([image_input]),
+			  			   	   			   net.seg_label: np.array([image_labels[idx]]),
+			  			   	   			   net.apply_grads_flag: int(idx == len(image_inputs) - 1)})
 	net.done_optimize()
 	print(time.clock() - t0)
 	if not silent:

@@ -40,8 +40,8 @@ class FCN32VGG(Model):
         self.apply_grads_flag = tf.placeholder(tf.int32)
         print("npy file loaded")
 
-    def build(self, train=False, num_classes=20, random_init_fc8=False,
-              debug=False):
+    def build(self, train = False, num_classes = 22, random_init_fc8 = False,
+              debug = False):
         """
         Build the VGG model using loaded weights
         Parameters

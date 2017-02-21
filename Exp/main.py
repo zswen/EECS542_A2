@@ -51,6 +51,7 @@ def main():
 	batch_current = manager.list([0])
 	
 	#launch data_loader
+	processors = []
 	for _ in range(num_processor):
 		P = Process(target = loadData,
 					args = (train_ims,
@@ -60,6 +61,7 @@ def main():
 			 				cv_full, cv_empty,
 			 				data_loader_capacity))
 		P.start()
+		processors.append(P)
 
 	current_iter = 0
 	#start training
