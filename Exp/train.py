@@ -8,7 +8,7 @@ from random import shuffle
 import time
 
 sys.path.append('../Util')
-from prepare_data import getSegLabel, getDetectionLabel
+from prepare_data import getSegLabel, getDetectionLabel, getSubbatch
 
 sys.path.append('../Network')
 from fcn import FCN32VGG
@@ -63,12 +63,13 @@ def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
 	image_inputs = data['images']
 	image_labels = data['label_masks']
 	assert len(image_inputs) == len(image_labels)
+	subbatches = getSubbatch(image_inputs, image_labels)
 	t0 = time.clock()
-	for idx, image_input in enumerate(image_inputs):
+	for idx, subbatch in enumerate(subbatches):
 		[loss, _] = sess.run([net.loss, net.train_op], \
-			  				  feed_dict = {net.im_input: np.array([image_input]),
-			  			   	   			   net.seg_label: np.array([image_labels[idx]]),
-			  			   	   			   net.apply_grads_flag: int(idx == len(image_inputs) - 1)})
+			  				  feed_dict = {net.im_input: np.array([subbatch['images']]),
+			  			   	   			   net.seg_label: np.array([subbatch['labels']]),
+			  			   	   			   net.apply_grads_flag: int(idx == len(subbatches) - 1)})
 	net.done_optimize()
 	print(time.clock() - t0)
 	if not silent:
