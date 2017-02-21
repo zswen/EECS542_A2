@@ -129,19 +129,19 @@ class FCN32VGG(Model):
         self.pred_up = tf.argmax(self.upscore, dimension=3)
 
     def loss(self, lr, head = None):
-        #labels is a tf.placeholder [batch, width, height]
+        #labels is a tf.placeholder [batch, height, width]
         with tf.name_scope('loss'):
             epsilon = tf.constant(value=1e-4)
             self.labels = tf.one_hot(self.seg_label, self.num_classes)
 
-            softmax = tf.nn.softmax(self.upscore) + epsilon
+            self.softmax = tf.nn.softmax(self.upscore) + epsilon
 
             if head is not None:
-                cross_entropy = -tf.reduce_sum(tf.mul(self.labels * tf.log(softmax),
+                cross_entropy = -tf.reduce_sum(tf.mul(self.labels * tf.log(self.softmax),
                                                head), reduction_indices=[1])
             else:
                 cross_entropy = -tf.reduce_sum(
-                    self.labels * tf.log(softmax), reduction_indices=[1])
+                    self.labels * tf.log(self.softmax), reduction_indices=[1])
 
             cross_entropy_mean = tf.reduce_mean(cross_entropy,
                                                 name='xentropy_mean')

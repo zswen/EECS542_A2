@@ -41,7 +41,7 @@ def main():
 	#get data split
 	valid_ims = getIndex('val')
 	train_ims = getIndex('train')
-	shuffle(train_ims)
+	#shuffle(train_ims)
 
 	batch_current = manager.list([0])
 	
@@ -75,7 +75,7 @@ def main():
 	#start training
 	while current_iter < max_iter:
 		t0 = time.clock()
-		print('iter %d' % (current_iter + 1))
+		print('{iter %d}' % (current_iter + 1))
 		if current_iter % 1 == 0:
 			silent = False
 		else:
@@ -83,6 +83,8 @@ def main():
 		#loadDataOneThread(train_ims, train_image_batches, batch_current, resize_threshold)
 		step(sess, net, train_image_batches, cv_empty, cv_full, silent)
 		current_iter += 1
+		if current_iter % snapshot_iter == 0:
+			net.save(sess, '../Checkpoints', 'Segmentation_fixSize')
 		print('[*][*] iter timing: %d' % (time.clock() - t0))
 	return
 	

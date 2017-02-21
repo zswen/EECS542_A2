@@ -17,8 +17,9 @@ def getSubbatch(images, image_labels, similar_thred):
 	subbatches = []
 	for cluster in clusters:
 		if len(cluster) > 1:
-			ideal_size = np.median(cluster, axis = 0)
-			ideal_size = [int(i) for i in ideal_size]
+			#ideal_size = np.median(cluster, axis = 0)
+			#ideal_size = [int(i) for i in ideal_size]
+			ideal_size = [375, 500]
 			subbatch_im = []
 			subbatch_label = []
 			for img in cluster:
