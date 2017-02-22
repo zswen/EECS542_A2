@@ -40,7 +40,7 @@ class FCN32VGG(Model):
         self.apply_grads_flag = tf.placeholder(tf.int32)
         print("npy file loaded")
 
-    def build(self, train = False, num_classes = 22, random_init_fc8 = False,
+    def build(self, train, num_classes = 22, random_init_fc8 = False,
               debug = False):
         """
         Build the VGG model using loaded weights
@@ -143,9 +143,9 @@ class FCN32VGG(Model):
                 cross_entropy = -tf.reduce_sum(
                     self.labels * tf.log(self.softmax), reduction_indices=[1])
 
-            cross_entropy_mean = tf.reduce_mean(cross_entropy,
+            self.cross_entropy_mean = tf.reduce_mean(cross_entropy,
                                                 name='xentropy_mean')
-            tf.add_to_collection('losses', cross_entropy_mean)
+            tf.add_to_collection('losses', self.cross_entropy_mean)
 
             self.loss = tf.add_n(tf.get_collection('losses'), name='total_loss')
 

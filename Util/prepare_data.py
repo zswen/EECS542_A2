@@ -15,11 +15,11 @@ def getSubbatch(images, image_labels, similar_thred):
 	cl = HierarchicalClustering(sizes, lambda x, y: abs(x[0] - y[0]) + abs(x[1] - y[1]))
 	clusters = cl.getlevel(similar_thred)
 	subbatches = []
+	sorted(clusters, key = lambda cluster: len(cluster))
 	for cluster in clusters:
 		if len(cluster) > 1:
-			#ideal_size = np.median(cluster, axis = 0)
-			#ideal_size = [int(i) for i in ideal_size]
-			ideal_size = [375, 500]
+			ideal_size = np.median(cluster, axis = 0)
+			ideal_size = [int(i) for i in ideal_size]
 			subbatch_im = []
 			subbatch_label = []
 			for img in cluster:

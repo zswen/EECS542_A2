@@ -2,13 +2,15 @@ import numpy as np
 from collections import OrderedDict
 
 learning_rate = 1e-4
+model_name = 'trueSize'
 
+train_mode = True
 batch_size = 20
-snapshot_iter = 10
+snapshot_iter = 100
 data_loader_capacity = 10
-resize_threshold = 500
+resize_threshold = 100
 max_iter = float('inf')
-num_processor = 1
+num_processor = 2
 
 image_root = '../TrainVal/VOCdevkit/VOC2011/JPEGImages'
 annotation_root = '../TrainVal/VOCdevkit/VOC2011/Annotations'

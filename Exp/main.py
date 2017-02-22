@@ -41,7 +41,7 @@ def main():
 	#get data split
 	valid_ims = getIndex('val')
 	train_ims = getIndex('train')
-	#shuffle(train_ims)
+	shuffle(train_ims)
 
 	batch_current = manager.list([0])
 	
@@ -66,25 +66,26 @@ def main():
 					  log_device_placement = False))
 	net = FCN32VGG()
 	with tf.device('/%s: %d' % (device, device_idx)): 
-		net.build()
+		net.build(train = train_mode)
 		net.loss(learning_rate)
 	init = tf.global_variables_initializer()
 	sess.run(init)
+
+	net.load(sess, '../Checkpoints', 'Segmentation_%s' % model_name, [])
 
 	current_iter = 0
 	#start training
 	while current_iter < max_iter:
 		t0 = time.clock()
 		print('{iter %d}' % (current_iter + 1))
-		if current_iter % 1 == 0:
+		if current_iter % 10 == 0:
 			silent = False
 		else:
 			silent = True
-		#loadDataOneThread(train_ims, train_image_batches, batch_current, resize_threshold)
 		step(sess, net, train_image_batches, cv_empty, cv_full, silent)
 		current_iter += 1
 		if current_iter % snapshot_iter == 0:
-			net.save(sess, '../Checkpoints', 'Segmentation_fixSize')
+			net.save(sess, '../Checkpoints', 'Segmentation_%s' % model_name)
 		print('[*][*] iter timing: %d' % (time.clock() - t0))
 	return
 	
