@@ -1,16 +1,17 @@
 import numpy as np
 from collections import OrderedDict
 
-learning_rate = 1e-4
-model_name = 'trueSize'
+learning_rate = 1e-5
+model_name = 'partialReize'
 
-train_mode = True
+train_mode = True #False for testing
 batch_size = 20
-snapshot_iter = 100
-data_loader_capacity = 10
+snapshot_iter = 100 #write checkpoint for every @ iterations
+data_loader_capacity = 10 #cache how many batches
 resize_threshold = 100
 max_iter = float('inf')
-num_processor = 2
+num_processor = 2 #number of processes loading data
+silent_train = True #print loss for every step
 
 image_root = '../TrainVal/VOCdevkit/VOC2011/JPEGImages'
 annotation_root = '../TrainVal/VOCdevkit/VOC2011/Annotations'

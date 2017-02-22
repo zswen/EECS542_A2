@@ -68,8 +68,8 @@ def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
 	#print('[*]batch time: %d' % (time.clock() - t0))
 	net.done_optimize()
 	if not silent:
-		print('[$][$]segmentation loss: %f, total loss: %f' % (seg_loss, loss))
-	return
+		print('\t[!]segmentation loss: %f, total loss: %f' % (seg_loss, loss))
+	return seg_loss
 
 def main():
 	sys.path.append('../Util')
