@@ -1,8 +1,9 @@
 import numpy as np
 from collections import OrderedDict
 
-learning_rate = 1e-6
-model_name = 'partialReize'
+learning_rate = 1e-4
+model_init = 'partialResize'
+model_save = 'partialResize_fine'
 
 train_mode = True #False for testing
 result_save_path = '../Submission/Result'

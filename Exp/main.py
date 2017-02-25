@@ -74,7 +74,7 @@ def main():
 		net.loss(learning_rate)
 	init = tf.global_variables_initializer()
 	sess.run(init)
-	if net.load(sess, '../Checkpoints', 'Segmentation_%s' % model_name, []):
+	if net.load(sess, '../Checkpoints', 'Segmentation_%s' % model_init, []):
 		print('LOAD SUCESSFULLY')
 	elif train_mode:
 		print('[!!!]No Model Found, Train From Scratch')
@@ -95,7 +95,7 @@ def main():
 			avg_loss.append(step(sess, net, train_image_batches, cv_empty, cv_full, silent_train))
 			current_iter += 1
 			if current_iter % snapshot_iter == 0:
-				net.save(sess, '../Checkpoints', 'Segmentation_%s' % model_name)
+				net.save(sess, '../Checkpoints', 'Segmentation_%s' % model_save)
 			print('[$] iter timing: %d' % (time.clock() - t0))
 	#start testing
 	else:

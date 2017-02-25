@@ -61,7 +61,7 @@ def main():
 	
 	for P in processors:
 		P.join()
-	print(total_result_dict)
+	
 	return
 
 if __name__ == '__main__':

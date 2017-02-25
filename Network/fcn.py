@@ -126,7 +126,7 @@ class FCN32VGG(Model):
                                            debug=debug,
                                            name='up', ksize=64, stride=32)
 
-        predicted_score = tf.splice(self.upscore, [0, 0, 0, 0], \
+        predicted_score = tf.slice(self.upscore, [0, 0, 0, 0], \
             [-1, -1, -1, self.num_classes - 1])
         self.pred_up = tf.argmax(predicted_score, dimension=3)
 
