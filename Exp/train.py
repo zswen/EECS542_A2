@@ -1,98 +1,98 @@
-import tensorflow as tf
-import sys
 import os
-import numpy as np
+import sys
 import cv2
 from random import shuffle
-
 import time
+from multiprocessing import Condition, Lock, Process, Manager
+import tensorflow as tf
 
-sys.path.append('../Util')
-from prepare_data import getSegLabel, getDetectionLabel, getSubbatch
-
-sys.path.append('../Network')
-from fcn import FCN32VGG
-
+from train import *
 from config import *
+sys.path.append('../Util')
+from debug import loadDataOneThread
 import pdb
 
-#image_names: ['2007_000032'], not include suffices
-#data_loader: [{'images': [], 'label_masks': []}]
-def loadData(all_image_names, data_loader, batch_current, \
-			 batch_lock, cv_full, cv_empty, \
-			 data_loader_capacity = 10, resize_threshold = 20):
-	while True:
-		images = []
-		batch_lock.acquire()
-		image_names = all_image_names[batch_current[0] * batch_size: (batch_current[0] + 1) * batch_size]
-		batch_current[0] = batch_current[0] + 1
-		batch_lock.release()
-		label_masks = getSegLabel(image_names, color2Idx, segmentation_root)
-		for name in image_names:
-			image = cv2.imread(os.path.join(image_root, name + '.jpg'))
-			images.append(image)
+#multiprocess objects
+manager = Manager()
+batch_lock = Lock()
+mutex = Lock()
+cv_empty = Condition(mutex)
+cv_full = Condition(mutex)
+train_image_batches = manager.list()
 
-		#protect shared data
-		cv_full.acquire()
-		while len(data_loader) >= data_loader_capacity:
-			cv_full.wait()
-		data_loader.append(getSubbatch(images, label_masks, resize_threshold))
-		cv_empty.notify()
-		cv_full.release()
-
-		batch_lock.acquire()
-		if batch_size * batch_current[0] >= len(all_image_names):
-			batch_current[0] = 0
-			shuffle(all_image_names)
-		batch_lock.release()
-
-#image_inputs: list of images [[w, h, c], ...]
-#image_labels: list of images [[w, h, c], ...]
-def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
-	
-	#access shared data
-	cv_empty.acquire()
-	while len(data_loader) == 0:
-		cv_empty.wait()
-	subbatches = data_loader.pop(0)
-	cv_full.notify()
-	cv_empty.release()
-
-	t0 = time.clock()
-	for idx, subbatch in enumerate(subbatches):
-		[loss, _] = sess.run([net.loss, net.train_op], \
-			  				  feed_dict = {net.im_input: np.array(subbatch['images']),
-			  			   	   			   net.seg_label: np.array(subbatch['labels']),
-			  			   	   			   net.apply_grads_flag: int(idx == len(subbatches) - 1)})
-	net.done_optimize()
-	print('batch time: %d' % (time.clock() - t0), )
-	if not silent:
-		print('[*][*]segmentation loss:', loss)
-	return
+def getIndex(split):
+	if split != 'train' and split != 'val':
+		print('wrong split name, enter train|val')
+	f = open(os.path.join(data_split_root, split + '.txt'))
+	names = f.readlines()
+	return manager.list([name[0: -1] for name in names])
 
 def main():
-	sys.path.append('../Util')
-	from prepare_data import getSegLabel, getDetectionLabel
 	
-	device_idx = 0
+	#set device
+	if len(sys.argv) != 3 or \
+		(sys.argv[1] != 'cpu' and sys.argv[1] != 'gpu'):
+		print('wrong arguments, <cpu|gpu> <device_idx(integer)> ')
+		return
+	
+	device = sys.argv[1]
+	device_idx = int(sys.argv[2])
+
+	#get data split
+	valid_ims = getIndex('val')
+	train_ims = getIndex('train')
+	shuffle(train_ims)
+
+	batch_current = manager.list([0])
+	
+	#launch data_loader
+	
+	processors = []
+	for _ in range(num_processor):
+		P = Process(target = loadData,
+					args = (train_ims,
+			 				train_image_batches, 
+			 				batch_current,
+			 				batch_lock, 
+			 				cv_full, cv_empty,
+			 				data_loader_capacity,
+			 				resize_threshold))
+		P.start()
+		processors.append(P)
+	
+
+	#create network
 	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, 
 					  log_device_placement = False))
 	net = FCN32VGG()
-	with tf.device('/cpu: %d' % device_idx): 
-		net.build(debug = True)
-		net.loss(1e-4)
+	with tf.device('/%s: %d' % (device, device_idx)): 
+		net.build(train = train_mode)
+		net.loss(learning_rate)
 	init = tf.global_variables_initializer()
 	sess.run(init)
-	for idx, f in enumerate(['2007_000032', '2007_000033']):
-		test_img = cv2.imread(os.path.join(image_root, f + '.jpg'))
-		test_label = getSegLabel([f], color2Idx, segmentation_root)
-		[prediction, loss, _] = sess.run([net.pred_up, net.loss, net.train_op], \
-						  				   feed_dict = {im_input: np.array([test_img]),
-						  			   	   				seg_label: np.array([test_label]),
-						  			   	   				apply_grads_flag: idx % 2})
-	print(loss)
-	cv2.imwrite('test.png', prediction[0, ...])
+	if net.load(sess, '../Checkpoints', 'Segmentation_%s' % model_name, []):
+		print('LOAD SUCESSFULLY')
+	else:
+		print('[!!!]No Model Found, Train From Scratch')
+
+	#start training
+	current_iter = 1
+	avg_loss = []
+	while current_iter < max_iter:
+		t0 = time.clock()
+		print('{iter %d}' % (current_iter))
+		if current_iter % 10 == 0:
+			print('[#]average seg loss is: %f' % np.mean(avg_loss))
+			avg_loss = []
+		avg_loss.append(step(sess, net, train_image_batches, cv_empty, cv_full, silent_train))
+		current_iter += 1
+		if current_iter % snapshot_iter == 0:
+			net.save(sess, '../Checkpoints', 'Segmentation_%s' % model_name)
+		print('[$] iter timing: %d' % (time.clock() - t0))
 	return
+	
 
 if __name__ == '__main__':
 	main()
+
+
