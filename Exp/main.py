@@ -6,7 +6,7 @@ import time
 from multiprocessing import Condition, Lock, Process, Manager
 import tensorflow as tf
 
-from train import *
+from step import *
 from config import *
 sys.path.append('../Util')
 from debug import loadDataOneThread
