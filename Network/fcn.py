@@ -32,7 +32,7 @@ class FCN32VGG(Model):
             sys.exit(1)
 
         self.data_dict = np.load(vgg16_npy_path, encoding='latin1').item()
-        self.wd = 5e-4
+        self.wd = 1e-3
         self.gradients_pool = []
         self.average_grads = []
         self.im_input = tf.placeholder(tf.float32)
@@ -130,7 +130,7 @@ class FCN32VGG(Model):
             [-1, -1, -1, self.num_classes - 1])
         self.pred_up = tf.argmax(predicted_score, dimension=3)
 
-    def loss(self, lr, head = None):
+    def loss(self, lr, optimizer = 'Mome', head = None):
         #labels is a tf.placeholder [batch, height, width]
         with tf.name_scope('loss'):
             epsilon = tf.constant(value=1e-4)
@@ -152,7 +152,12 @@ class FCN32VGG(Model):
             self.loss = tf.add_n(tf.get_collection('losses'), name='total_loss')
 
             #optimizer of the net
-            self.opt = tf.train.MomentumOptimizer(lr, 0.9)
+            if optimizer == 'Mome'
+                self.opt = tf.train.MomentumOptimizer(lr, 0.9)
+            elif optimizer == 'Adam':
+                self.opt = tf.train.MomentumOptimizer(learning_rate = lr)
+            else:
+                assert 0
             self.gradients = self.opt.compute_gradients(self.loss)
             self.gradients_pool.append(self.gradients)
 

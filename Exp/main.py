@@ -71,7 +71,7 @@ def main():
 	net = FCN32VGG()
 	with tf.device('/%s: %d' % (device, device_idx)): 
 		net.build(train = train_mode)
-		net.loss(learning_rate)
+		net.loss(learning_rate, optimizer_mode)
 	init = tf.global_variables_initializer()
 	sess.run(init)
 	if net.load(sess, '../Checkpoints', 'Segmentation_%s' % model_init, []):
