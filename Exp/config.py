@@ -6,7 +6,7 @@ model_init = 'partialResize'
 model_save = 'partialResize_fine'
 
 train_mode = True #False for testing
-optimizer_mode = 'Mome' #Also support: Adam
+optimizer_mode = 'Mome' #Support [Adam/Mome]
 result_save_path = '../Submission/Result'
 batch_size = 20
 snapshot_iter = 100 #write checkpoint for every @ iterations

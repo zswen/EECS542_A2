@@ -152,7 +152,7 @@ class FCN32VGG(Model):
             self.loss = tf.add_n(tf.get_collection('losses'), name='total_loss')
 
             #optimizer of the net
-            if optimizer == 'Mome'
+            if optimizer == 'Mome':
                 self.opt = tf.train.MomentumOptimizer(lr, 0.9)
             elif optimizer == 'Adam':
                 self.opt = tf.train.MomentumOptimizer(learning_rate = lr)
