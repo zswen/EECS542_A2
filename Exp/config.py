@@ -1,7 +1,7 @@
 import numpy as np
 from collections import OrderedDict
 
-learning_rate = 1e-5
+learning_rate = 1e-6
 model_name = 'partialReize'
 
 train_mode = True #False for testing
