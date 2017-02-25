@@ -5,6 +5,7 @@ learning_rate = 1e-6
 model_name = 'partialReize'
 
 train_mode = True #False for testing
+result_save_path = '../Submission/Result'
 batch_size = 20
 snapshot_iter = 100 #write checkpoint for every @ iterations
 data_loader_capacity = 10 #cache how many batches
@@ -41,7 +42,8 @@ className2Idx = {'aeroplane':1,
 		}
 idx2ClassName = {v: k for k, v in className2Idx.items()}
 
-color2Idx = {(0, 0, 128): 1,
+color2Idx = {(0, 0, 0): 0,
+		 (0, 0, 128): 1,
 		 (0, 128, 0): 2,
 		 (0, 128, 128): 3,
 		 (128, 0, 0): 4,

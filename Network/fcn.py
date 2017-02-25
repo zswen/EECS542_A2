@@ -126,7 +126,9 @@ class FCN32VGG(Model):
                                            debug=debug,
                                            name='up', ksize=64, stride=32)
 
-        self.pred_up = tf.argmax(self.upscore, dimension=3)
+        predicted_score = tf.splice(self.upscore, [0, 0, 0, 0], \
+            [-1, -1, -1, self.num_classes - 1])
+        self.pred_up = tf.argmax(predicted_score, dimension=3)
 
     def loss(self, lr, head = None):
         #labels is a tf.placeholder [batch, height, width]

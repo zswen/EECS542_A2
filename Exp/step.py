@@ -59,7 +59,7 @@ def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
 	cv_empty.release()
 
 	for idx, subbatch in enumerate(subbatches):
-		[loss, seg_loss, _, pred_up] = sess.run([net.loss, net.cross_entropy_mean, net.train_op, net.pred_up], \
+		[loss, seg_loss, _] = sess.run([net.loss, net.cross_entropy_mean, net.train_op], \
 			  				  feed_dict = {net.im_input: np.array(subbatch['images']),
 			  			   	   			   net.seg_label: np.array(subbatch['labels']),
 			  			   	   			   net.apply_grads_flag: int(idx == len(subbatches) - 1)})
