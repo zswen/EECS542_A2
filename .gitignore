@@ -6,4 +6,5 @@ tensorflow-fcn/*
 *.pyc
 sftp-config.json
 */__pycache__/*
-*/Checkpoints/*
+Checkpoints/
+*.png
