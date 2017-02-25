@@ -15,7 +15,7 @@ def visualize(image_mask, if_seg = True, save_path = '../Submission/test.png'):
 		seg_img = np.zeros((width, height, 3))
 		for i in range(width):
 			for j in range(height):
-				if image_mask[i, j] != 0:
+				if int(image_mask[i, j]) != 0:
 					seg_img[i, j, :] = idx2Color[int(image_mask[i, j])]
 
 		cv2.imwrite(save_path, seg_img)

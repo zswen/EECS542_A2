@@ -16,11 +16,9 @@ def loadDataOneThread(all_image_names, data_loader, batch_current, resize_thresh
 		image_names = all_image_names[batch_current[0] * batch_size: (batch_current[0] + 1) * batch_size]
 		batch_current[0] = batch_current[0] + 1
 		label_masks = getSegLabel(image_names, color2Idx, segmentation_root)
-		t0 = time.clock()
 		for name in image_names:
 			image = cv2.imread(os.path.join(image_root, name + '.jpg'))
 			images.append(image)
-		print('read image timing:%d' % (time.clock() - t0))
 		data_loader.append(getSubbatch(images, label_masks, resize_threshold))
 
 		if batch_size * batch_current[0] >= len(all_image_names):

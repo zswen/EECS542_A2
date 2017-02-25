@@ -40,7 +40,7 @@ class FCN32VGG(Model):
         self.apply_grads_flag = tf.placeholder(tf.int32)
         print("npy file loaded")
 
-    def build(self, train = False, num_classes = 22, random_init_fc8 = False,
+    def build(self, train, num_classes = 22, random_init_fc8 = False,
               debug = False):
         """
         Build the VGG model using loaded weights
@@ -129,36 +129,37 @@ class FCN32VGG(Model):
         self.pred_up = tf.argmax(self.upscore, dimension=3)
 
     def loss(self, lr, head = None):
-        #labels is a tf.placeholder [batch, width, height]
+        #labels is a tf.placeholder [batch, height, width]
         with tf.name_scope('loss'):
             epsilon = tf.constant(value=1e-4)
             self.labels = tf.one_hot(self.seg_label, self.num_classes)
 
-            softmax = tf.nn.softmax(self.upscore) + epsilon
+            self.softmax = tf.nn.softmax(self.upscore) + epsilon
 
             if head is not None:
-                cross_entropy = -tf.reduce_sum(tf.mul(self.labels * tf.log(softmax),
+                cross_entropy = -tf.reduce_sum(tf.mul(self.labels * tf.log(self.softmax),
                                                head), reduction_indices=[1])
             else:
                 cross_entropy = -tf.reduce_sum(
-                    self.labels * tf.log(softmax), reduction_indices=[1])
+                    self.labels * tf.log(self.softmax), reduction_indices=[1])
 
-            cross_entropy_mean = tf.reduce_mean(cross_entropy,
+            self.cross_entropy_mean = tf.reduce_mean(cross_entropy,
                                                 name='xentropy_mean')
-            tf.add_to_collection('losses', cross_entropy_mean)
+            tf.add_to_collection('losses', self.cross_entropy_mean)
 
             self.loss = tf.add_n(tf.get_collection('losses'), name='total_loss')
 
             #optimizer of the net
             self.opt = tf.train.MomentumOptimizer(lr, 0.9)
             self.gradients = self.opt.compute_gradients(self.loss)
-            #self.gradients_pool.append(self.gradients)
+            self.gradients_pool.append(self.gradients)
 
-            self.train_op = self.opt.apply_gradients(self.gradients, 
-                                        global_step = self.global_step)
-            #placeholder_op = lambda: tf.no_op()
+            #self.train_op = self.opt.apply_gradients(self.gradients, 
+            #                          global_step = self.global_step)
+            
+            placeholder_op = lambda: tf.no_op()
 
-            #self.train_op = tf.cond(tf.equal(self.apply_grads_flag, 1), self.optimize, placeholder_op)
+            self.train_op = tf.cond(tf.equal(self.apply_grads_flag, 1), self.optimize, placeholder_op)
 
     def optimize(self):
         #accumulate gradients
@@ -177,7 +178,6 @@ class FCN32VGG(Model):
     def done_optimize(self):
         self.average_grads = []
         self.gradients_pool = []
-
 
     def _max_pool(self, bottom, name, debug):
         pool = tf.nn.max_pool(bottom, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
