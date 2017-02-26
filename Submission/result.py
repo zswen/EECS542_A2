@@ -58,9 +58,20 @@ def calcMetric(result_dict):
 	mean_acc = 0
 	mean_IU = 0
 	freq_weighted_IU = 0
+
+	acc_by_class = defaultdict(int)
+	IU_by_class = defaultdict(int)
 	for key,value in correct_pix.items():
-		mean_acc += value / float(total_pix[key])
-		mean_IU += value / float(total_pix[key] + wrong_pix[key])
+		tmp_acc = value / float(total_pix[key])
+		tmp_IU = value / float(total_pix[key] + wrong_pix[key])
+		if key == 0:
+			acc_by_class['background'] = tmp_acc
+			IU_by_class['background'] = tmp_IU
+		else:
+			acc_by_class[idx2ClassName[key]] = tmp_acc
+			IU_by_class[idx2ClassName[key]] = tmp_IU
+		mean_acc += tmp_acc
+		mean_IU += tmp_IU
 		freq_weighted_IU += total_pix[key]*correct_pix[key]/float(total_pix[key] + wrong_pix[key])
 	
 	pix_acc = sum(correct_pix.values()) / float(sum(total_pix.values()))
@@ -68,11 +79,15 @@ def calcMetric(result_dict):
 	mean_IU = mean_IU / len(correct_pix)
 	freq_weighted_IU = freq_weighted_IU / sum(total_pix.values())
 
-	teams_list = ["Pixel Accuracy", "Mean Accuracy", "Mean IU", "Frequency Weighted IU"]
 	print(tabulate([["Pixel Accuracy", pix_acc], 
 		["Mean Accuracy", mean_acc], 
 		["Mean IU", mean_IU], 
 		["Frequency Weighted IU", freq_weighted_IU]]))
+	print("Accuracy by Class\n")
+	print(tabulate({"Object":acc_by_class.keys(), "Accuracy":acc_by_class.values()}))
+	print("IU by Class\n")
+	print(tabulate({"Object":IU_by_class.keys(), "IU":IU_by_class.values()}))
+
 
 
 def main():
