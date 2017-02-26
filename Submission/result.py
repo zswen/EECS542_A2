@@ -3,6 +3,7 @@ import cv2
 import sys
 import os
 import operator
+import pickle
 from tabulate import tabulate
 from multiprocessing import Lock, Process, Manager
 from collections import defaultdict
@@ -84,12 +85,11 @@ def calcMetric(result_dict):
 	sorted_IU_by_class = sorted(IU_by_class.items(), key=operator.itemgetter(1))
 	sorted_acc_by_class.reverse()
 	sorted_IU_by_class.reverse()
-	
+
 	print(tabulate([["Pixel Accuracy", pix_acc], 
 		["Mean Accuracy", mean_acc], 
 		["Mean IU", mean_IU], 
 		["Frequency Weighted IU", freq_weighted_IU]]))
-	pdb.set_trace()
 	print("Accuracy by Class\n")
 	print(tabulate(sorted_acc_by_class, headers = ["Object", "Accuracy"]))
 	print("IU by Class\n")
@@ -104,19 +104,25 @@ def main():
 	total_result_dict = mgr.dict()
 	current_img = mgr.list([0])
 	processors = []
-	for _ in range(10):
-		P = Process(target = summary,
-					args = (val_ims, 
-			 				current_img,
-			 				[lock_list, lock_dict], 
-			 				total_result_dict))
-		P.start()
-		processors.append(P)
+	if not os.path.exists('summary.pickle'):
+		for _ in range(10):
+			P = Process(target = summary,
+						args = (val_ims, 
+				 				current_img,
+				 				[lock_list, lock_dict], 
+				 				total_result_dict))
+			P.start()
+			processors.append(P)
 
-	for P in processors:
-		P.join()
-
-	calcMetric(total_result_dict)
+		for P in processors:
+			P.join()
+		pdb.set_trace()
+		with open('summary.pickle', 'wb') as handle:
+			pickle.dump(total_result_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+		calcMetric(total_result_dict)
+	else:
+		with open('filename.pickle', 'rb') as handle:
+			calcMetric(pickle.load(handle))
 	return
 
 if __name__ == '__main__':
