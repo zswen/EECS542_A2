@@ -1,7 +1,7 @@
 import numpy as np
 from collections import OrderedDict
 
-learning_rate = 1e-4
+learning_rate = 1e-5
 model_init = 'partialResize'
 model_save = 'partialResize_fine'
 
