@@ -28,7 +28,7 @@ def analyze(gt_mask, pred_mask):
 
 def summary(img_list, current_img, locks, total_result_dict, 
 			gt_dir = segmentation_root, predict_dir = './Result'):
-	while current_img[0] < 100:
+	while current_img[0] < len(img_list):
 		locks[0].acquire()
 		idx = current_img[0]
 		current_img[0] = current_img[0] + 1

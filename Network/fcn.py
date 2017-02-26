@@ -139,7 +139,7 @@ class FCN32VGG(Model):
             self.softmax = tf.nn.softmax(self.upscore) + epsilon
 
             if head is not None:
-                cross_entropy = -tf.reduce_sum(tf.mul(self.labels * tf.log(self.softmax),
+                cross_entropy = -tf.reduce_sum(tf.multiply(self.labels * tf.log(self.softmax),
                                                head), reduction_indices=[1])
             else:
                 cross_entropy = -tf.reduce_sum(
