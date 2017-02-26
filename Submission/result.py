@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import sys
 import os
+import operator
 from tabulate import tabulate
 from multiprocessing import Lock, Process, Manager
 from collections import defaultdict
@@ -79,14 +80,20 @@ def calcMetric(result_dict):
 	mean_IU = mean_IU / len(correct_pix)
 	freq_weighted_IU = freq_weighted_IU / sum(total_pix.values())
 
+	sorted_acc_by_class = sorted(acc_by_class.items(), key=operator.itemgetter(1))
+	sorted_IU_by_class = sorted(IU_by_class.items(), key=operator.itemgetter(1))
+	sorted_acc_by_class.reverse()
+	sorted_IU_by_class.reverse()
+	
 	print(tabulate([["Pixel Accuracy", pix_acc], 
 		["Mean Accuracy", mean_acc], 
 		["Mean IU", mean_IU], 
 		["Frequency Weighted IU", freq_weighted_IU]]))
+	pdb.set_trace()
 	print("Accuracy by Class\n")
-	print(tabulate({"Object":acc_by_class.keys(), "Accuracy":acc_by_class.values()}))
+	print(tabulate(sorted_acc_by_class, headers = ["Object", "Accuracy"]))
 	print("IU by Class\n")
-	print(tabulate({"Object":IU_by_class.keys(), "IU":IU_by_class.values()}))
+	print(tabulate(sorted_IU_by_class, headers = ["Object", "IU"]))
 
 
 
