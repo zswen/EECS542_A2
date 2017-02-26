@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
 import pdb
 import os
 import sys
@@ -25,7 +24,7 @@ def visualize(image_mask, if_seg = True, save_path = '../Submission/test.png'):
 
 
 def main():
-	path = '/Users/zswen/Desktop/EECS542/Assignment2_git/TrainVal/VOCdevkit/VOC2011/SegmentationClass'
+	path = '../TrainVal/VOCdevkit/VOC2011/SegmentationClass'
 	seg = getSegLabel(['2007_000032'], color2Idx, path)
 	imput = np.asarray(seg[0])
 	visualize(imput, True)
