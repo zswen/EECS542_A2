@@ -5,7 +5,7 @@ learning_rate = 1e-5
 model_init = 'partialResize_fine'
 model_save = 'partialResize_fine'
 
-head = np.ones(22)
+bias = np.ones(22)
 train_mode = True #False for testing
 optimizer_mode = 'Mome' #Support [Adam/Mome]
 result_save_path = '../Submission/Result'
