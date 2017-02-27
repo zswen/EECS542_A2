@@ -1,9 +1,9 @@
 import numpy as np
 from collections import OrderedDict
 
-learning_rate = 1e-5
+learning_rate = 1e-4
 model_init = 'partialResize_fine'
-model_save = 'partialResize_fine'
+model_save = 'partialResize_8'
 
 bias = np.ones(22)
 bias[9] = 3
@@ -15,7 +15,7 @@ snapshot_iter = 100 #write checkpoint for every @ iterations
 data_loader_capacity = 10 #cache how many batches
 resize_threshold = 100
 max_iter = float('inf')
-num_processor = 2 #number of processes loading data
+num_processor = 4 #number of processes loading data
 silent_train = True #print loss for every step
 
 image_root = '../TrainVal/VOCdevkit/VOC2011/JPEGImages'

@@ -32,12 +32,13 @@ class FCN32VGG(Model):
             sys.exit(1)
 
         self.data_dict = np.load(vgg16_npy_path, encoding='latin1').item()
-        self.wd = 1e-3
+        self.wd = 5e-4
         self.gradients_pool = []
         self.average_grads = []
         self.im_input = tf.placeholder(tf.float32)
         self.seg_label = tf.placeholder(tf.int32)
         self.apply_grads_flag = tf.placeholder(tf.int32)
+        self.varlist = []
         print("npy file loaded")
 
     def build(self, train, num_classes = 22, random_init_fc8 = False,
@@ -121,12 +122,31 @@ class FCN32VGG(Model):
 
         self.pred = tf.argmax(self.score_fr, dimension=3)
 
-        self.upscore = self._upscore_layer(self.score_fr, shape=tf.shape(bgr),
-                                           num_classes=num_classes,
-                                           debug=debug,
-                                           name='up', ksize=64, stride=32)
+        self.upscore2 = self._upscore_layer(self.score_fr,
+                                            shape=tf.shape(self.pool4),
+                                            num_classes=num_classes,
+                                            debug=debug, name='upscore2',
+                                            ksize=4, stride=2)
+        self.score_pool4 = self._score_layer(self.pool4, "score_pool4",
+                                             num_classes=num_classes)
+        self.fuse_pool4 = tf.add(self.upscore2, self.score_pool4)
 
-        predicted_score = tf.slice(self.upscore, [0, 0, 0, 0], \
+        self.upscore4 = self._upscore_layer(self.fuse_pool4,
+                                            shape=tf.shape(self.pool3),
+                                            num_classes=num_classes,
+                                            debug=debug, name='upscore4',
+                                            ksize=4, stride=2)
+        self.score_pool3 = self._score_layer(self.pool3, "score_pool3",
+                                             num_classes=num_classes)
+        self.fuse_pool3 = tf.add(self.upscore4, self.score_pool3)
+
+        self.upscore32 = self._upscore_layer(self.fuse_pool3,
+                                             shape=tf.shape(bgr),
+                                             num_classes=num_classes,
+                                             debug=debug, name='upscore32',
+                                             ksize=16, stride=8)
+
+        predicted_score = tf.slice(self.upscore32, [0, 0, 0, 0], \
             [-1, -1, -1, self.num_classes - 1])
         self.pred_up = tf.argmax(predicted_score, dimension=3)
 
@@ -136,7 +156,7 @@ class FCN32VGG(Model):
             epsilon = tf.constant(value=1e-4)
             self.labels = tf.one_hot(self.seg_label, self.num_classes)
 
-            self.softmax = tf.nn.softmax(self.upscore) + epsilon
+            self.softmax = tf.nn.softmax(self.upscore32) + epsilon
 
             if head is not None:
                 cross_entropy = -tf.reduce_sum(tf.multiply(self.labels * tf.log(self.softmax),
@@ -199,6 +219,7 @@ class FCN32VGG(Model):
     def _conv_layer(self, bottom, name):
         with tf.variable_scope(name) as scope:
             filt = self.get_conv_filter(name)
+            self.varlist.append(filt)
             conv = tf.nn.conv2d(bottom, filt, [1, 1, 1, 1], padding='SAME')
 
             conv_biases = self.get_bias(name)
@@ -220,6 +241,7 @@ class FCN32VGG(Model):
                 name = 'fc8'  # Name of score_fr layer in VGG Model
                 filt = self.get_fc_weight_reshape(name, [1, 1, 4096, 1000],
                                                   num_classes=num_classes)
+                self.varlist.append(filt)
             else:
                 filt = self.get_fc_weight_reshape(name, [1, 1, 4096, 4096])
             conv = tf.nn.conv2d(bottom, filt, [1, 1, 1, 1], padding='SAME')
