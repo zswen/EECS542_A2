@@ -2,8 +2,8 @@ import numpy as np
 from collections import OrderedDict
 
 learning_rate = 1e-5
-model_init = 'partialResize_fine'
-model_save = 'partialResize_fine'
+model_init = 'partialResize'
+model_save = 'partialResize_32'
 
 bias = np.ones(22)
 bias[9] = 3
