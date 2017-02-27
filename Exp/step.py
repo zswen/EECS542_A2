@@ -77,17 +77,18 @@ def main():
 					  log_device_placement = False))
 	net = FCN32VGG()
 	with tf.device('/cpu: %d' % device_idx): 
-		net.build(debug = True)
-		net.loss(1e-4)
+		net.build(train = True)
+		net.loss(1e-4, 'Mome', None)
 	init = tf.global_variables_initializer()
 	sess.run(init)
 	for idx, f in enumerate(['2007_000032', '2007_000033']):
 		test_img = cv2.imread(os.path.join(image_root, f + '.jpg'))
 		test_label = getSegLabel([f], color2Idx, segmentation_root)
-		[prediction, loss, _] = sess.run([net.pred_up, net.loss, net.train_op], \
-						  				   feed_dict = {im_input: np.array([test_img]),
-						  			   	   				seg_label: np.array([test_label]),
-						  			   	   				apply_grads_flag: idx % 2})
+		[prediction, loss, conv5_3] = sess.run([net.pred_up, net.loss, net.conv5_3], \
+						  				   feed_dict = {net.im_input: np.array([test_img]),
+						  			   	   				net.seg_label: np.array([test_label]),
+						  			   	   				net.apply_grads_flag: idx % 2})
+		pdb.set_trace()
 	print(loss)
 	cv2.imwrite('test.png', prediction[0, ...])
 	return
