@@ -41,8 +41,8 @@ class FCN32VGG(Model):
         self.varlist = []
         print("npy file loaded")
 
-    def build(self, train, num_classes = 22, random_init_fc8 = False,
-              debug = False):
+    def build(self, train, upsample_mode = 32, num_classes = 22, 
+                random_init_fc8 = False, debug = False):
         """
         Build the VGG model using loaded weights
         Parameters
@@ -122,25 +122,59 @@ class FCN32VGG(Model):
 
         self.pred = tf.argmax(self.score_fr, dimension=3)
 
-        self.upscore2 = self._upscore_layer(self.score_fr,
+        if upsample_mode == 32:
+            self.upscore = self._upscore_layer(self.score_fr, shape=tf.shape(bgr),
+                                           num_classes=num_classes,
+                                           debug=debug,
+                                           name='up', ksize=64, stride=32)
+            predicted_score = tf.slice(self.upscore, [0, 0, 0, 0], \
+                [-1, -1, -1, self.num_classes - 1])
+        elif upsample_mode == 16:
+            self.upscore2 = self._upscore_layer(self.score_fr,
+                                                shape=tf.shape(self.pool4),
+                                                num_classes=num_classes,
+                                                debug=debug, name='upscore2',
+                                                ksize=4, stride=2)
+
+            self.score_pool4 = self._score_layer(self.pool4, "score_pool4",
+                                                 num_classes=num_classes)
+
+            self.fuse_pool4 = tf.add(self.upscore2, self.score_pool4)
+
+            self.upscore32 = self._upscore_layer(self.fuse_pool4,
+                                                 shape=tf.shape(bgr),
+                                                 num_classes=num_classes,
+                                                 debug=debug, name='upscore32',
+                                                 ksize=32, stride=16)
+            predicted_score = tf.slice(self.upscore32, [0, 0, 0, 0], \
+                [-1, -1, -1, self.num_classes - 1])
+        elif upsample_mode == 8:
+            self.upscore2 = self._upscore_layer(self.score_fr,
                                             shape=tf.shape(self.pool4),
                                             num_classes=num_classes,
                                             debug=debug, name='upscore2',
                                             ksize=4, stride=2)
+            self.score_pool4 = self._score_layer(self.pool4, "score_pool4",
+                                                 num_classes=num_classes)
+            self.fuse_pool4 = tf.add(self.upscore2, self.score_pool4)
 
-        self.score_pool4 = self._score_layer(self.pool4, "score_pool4",
-                                             num_classes=num_classes)
+            self.upscore4 = self._upscore_layer(self.fuse_pool4,
+                                                shape=tf.shape(self.pool3),
+                                                num_classes=num_classes,
+                                                debug=debug, name='upscore4',
+                                                ksize=4, stride=2)
+            self.score_pool3 = self._score_layer(self.pool3, "score_pool3",
+                                                 num_classes=num_classes)
+            self.fuse_pool3 = tf.add(self.upscore4, self.score_pool3)
 
-        self.fuse_pool4 = tf.add(self.upscore2, self.score_pool4)
-
-        self.upscore32 = self._upscore_layer(self.fuse_pool4,
-                                             shape=tf.shape(bgr),
-                                             num_classes=num_classes,
-                                             debug=debug, name='upscore32',
-                                             ksize=32, stride=16)
-
-        predicted_score = tf.slice(self.upscore32, [0, 0, 0, 0], \
-            [-1, -1, -1, self.num_classes - 1])
+            self.upscore32 = self._upscore_layer(self.fuse_pool3,
+                                                 shape=tf.shape(bgr),
+                                                 num_classes=num_classes,
+                                                 debug=debug, name='upscore32',
+                                                 ksize=16, stride=8)
+            predicted_score = tf.slice(self.upscore32, [0, 0, 0, 0], \
+                [-1, -1, -1, self.num_classes - 1])
+        
         self.pred_up = tf.argmax(predicted_score, dimension=3)
 
     def loss(self, lr, optimizer = 'Mome', head = None):
