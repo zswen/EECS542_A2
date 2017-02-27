@@ -199,9 +199,11 @@ class FCN32VGG(Model):
     def _conv_layer(self, bottom, name):
         with tf.variable_scope(name) as scope:
             filt = self.get_conv_filter(name)
+            self.varlist.append(filt)
             conv = tf.nn.conv2d(bottom, filt, [1, 1, 1, 1], padding='SAME')
 
             conv_biases = self.get_bias(name)
+            self.varlist.append(conv_biases)
             bias = tf.nn.bias_add(conv, conv_biases)
 
             relu = tf.nn.relu(bias)
@@ -222,10 +224,11 @@ class FCN32VGG(Model):
                                                   num_classes=num_classes)
             else:
                 filt = self.get_fc_weight_reshape(name, [1, 1, 4096, 4096])
+            self.varlist.append(filt)
             conv = tf.nn.conv2d(bottom, filt, [1, 1, 1, 1], padding='SAME')
             conv_biases = self.get_bias(name, num_classes=num_classes)
             bias = tf.nn.bias_add(conv, conv_biases)
-
+            self.varlist.append(conv_biases)
             if relu:
                 bias = tf.nn.relu(bias)
             _activation_summary(bias)
