@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 learning_rate = 1e-4
 model_init = 'partialResize_fine'
-model_save = 'partialResize_8'
+model_save = 'partialResize_16'
 
 bias = None#np.ones(22)
 train_mode = True #False for testing

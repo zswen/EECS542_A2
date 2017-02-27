@@ -22,7 +22,10 @@ class Model(object):
   def load(self, sess, checkpoint_dir, dataset_name, load_var):
 	
     all_vars = tf.global_variables()
-    restore_vars = [var for var in all_vars if var in load_var]
+    if len(load_var) == 0:
+      restore_vars = all_vars
+    else:
+      restore_vars = [var for var in all_vars if var in load_var]
     self.saver = tf.train.Saver(restore_vars)
     print(" [*] Loading checkpoints...")
     print(dataset_name)
