@@ -3,6 +3,7 @@ import cv2
 import sys
 import os
 import operator
+import pickle
 from tabulate import tabulate
 from multiprocessing import Lock, Process, Manager
 from collections import defaultdict
@@ -45,6 +46,37 @@ def summary(img_list, current_img, locks, total_result_dict,
 				total_result_dict[k] = result_dict[k] #(i,j): integer
 		locks[1].release()
 
+def getWrongPrediction(result_dict):
+	wrong = {}
+	wrong_prediction = {}
+	for key,value in result_dict.items():
+		if key[0] != key[1]:
+			if not key[0] in wrong:
+				wrong[key[0]] = {}
+			wrong[key[0]][key[1]] = value
+
+	for key,value in wrong.items():
+		tp_dict = {}
+		for sub_key, sub_value in value.items():
+			if sub_key == 0:
+				tp_dict['background'] = sub_value
+			elif sub_key == 21:
+				tp_dict['uncertain'] = sub_value
+			else:
+				tp_dict[idx2ClassName[sub_key]] = sub_value
+		if key == 0:
+			wrong_prediction['background'] = tp_dict
+		elif key == 21:
+			wrong_prediction['uncertain'] = tp_dict
+		else:
+			wrong_prediction[idx2ClassName[key]] = tp_dict
+
+	print(wrong_prediction)
+
+
+			
+
+
 def calcMetric(result_dict): 
 	correct_pix = defaultdict(int)
 	total_pix = defaultdict(int)
@@ -84,12 +116,11 @@ def calcMetric(result_dict):
 	sorted_IU_by_class = sorted(IU_by_class.items(), key=operator.itemgetter(1))
 	sorted_acc_by_class.reverse()
 	sorted_IU_by_class.reverse()
-	
+
 	print(tabulate([["Pixel Accuracy", pix_acc], 
 		["Mean Accuracy", mean_acc], 
 		["Mean IU", mean_IU], 
 		["Frequency Weighted IU", freq_weighted_IU]]))
-	pdb.set_trace()
 	print("Accuracy by Class\n")
 	print(tabulate(sorted_acc_by_class, headers = ["Object", "Accuracy"]))
 	print("IU by Class\n")
@@ -98,25 +129,36 @@ def calcMetric(result_dict):
 
 
 def main():
-	f = open(os.path.join(data_split_root, 'val.txt'))
-	names = f.readlines()
-	val_ims = mgr.list([name[0: -1] for name in names])
-	total_result_dict = mgr.dict()
-	current_img = mgr.list([0])
-	processors = []
-	for _ in range(10):
-		P = Process(target = summary,
-					args = (val_ims, 
-			 				current_img,
-			 				[lock_list, lock_dict], 
-			 				total_result_dict))
-		P.start()
-		processors.append(P)
+	if not os.path.exists('summary.pkl'):
+		f = open(os.path.join(data_split_root, 'val.txt'))
+		names = f.readlines()
+		val_ims = mgr.list([name[0: -1] for name in names])
+		total_result_dict = mgr.dict()
+		current_img = mgr.list([0])
+		processors = []
+		for _ in range(10):
+			P = Process(target = summary,
+						args = (val_ims, 
+				 				current_img,
+				 				[lock_list, lock_dict], 
+				 				total_result_dict))
+			P.start()
+			processors.append(P)
 
-	for P in processors:
-		P.join()
-
-	calcMetric(total_result_dict)
+		for P in processors:
+			P.join()
+		handle = open('summary.pkl', 'wb')
+		total_result_dict = dict(total_result_dict)
+		pickle.dump(total_result_dict, handle)
+		handle.close()
+		getWrongPrediction(result_dict)
+		#calcMetric(total_result_dict)
+	else:
+		handle = open('summary.pkl', 'rb')
+		result_dict = pickle.load(handle)
+		handle.close()
+		calcMetric(result_dict)
+		getWrongPrediction(result_dict)
 	return
 
 if __name__ == '__main__':

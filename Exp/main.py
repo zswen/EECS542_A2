@@ -74,7 +74,7 @@ def main():
 		net.loss(learning_rate, optimizer_mode, bias)
 	init = tf.global_variables_initializer()
 	sess.run(init)
-	if net.load(sess, '../Checkpoints', 'Segmentation_%s' % model_init, []):
+	if net.load(sess, '../Checkpoints', 'Segmentation_%s' % model_init, net.varlist):
 		print('LOAD SUCESSFULLY')
 	elif train_mode:
 		print('[!!!]No Model Found, Train From Scratch')
