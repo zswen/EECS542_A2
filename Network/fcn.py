@@ -127,24 +127,17 @@ class FCN32VGG(Model):
                                             num_classes=num_classes,
                                             debug=debug, name='upscore2',
                                             ksize=4, stride=2)
+
         self.score_pool4 = self._score_layer(self.pool4, "score_pool4",
                                              num_classes=num_classes)
+
         self.fuse_pool4 = tf.add(self.upscore2, self.score_pool4)
 
-        self.upscore4 = self._upscore_layer(self.fuse_pool4,
-                                            shape=tf.shape(self.pool3),
-                                            num_classes=num_classes,
-                                            debug=debug, name='upscore4',
-                                            ksize=4, stride=2)
-        self.score_pool3 = self._score_layer(self.pool3, "score_pool3",
-                                             num_classes=num_classes)
-        self.fuse_pool3 = tf.add(self.upscore4, self.score_pool3)
-
-        self.upscore32 = self._upscore_layer(self.fuse_pool3,
+        self.upscore32 = self._upscore_layer(self.fuse_pool4,
                                              shape=tf.shape(bgr),
                                              num_classes=num_classes,
                                              debug=debug, name='upscore32',
-                                             ksize=16, stride=8)
+                                             ksize=32, stride=16)
 
         predicted_score = tf.slice(self.upscore32, [0, 0, 0, 0], \
             [-1, -1, -1, self.num_classes - 1])
