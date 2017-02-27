@@ -216,8 +216,8 @@ class FCN32VGG(Model):
             conv = tf.nn.conv2d(bottom, filt, [1, 1, 1, 1], padding='SAME')
 
             conv_biases = self.get_bias(name)
+            self.varlist.append(conv_biases)
             bias = tf.nn.bias_add(conv, conv_biases)
-
             relu = tf.nn.relu(bias)
             # Add summary to Tensorboard
             _activation_summary(relu)
@@ -239,6 +239,7 @@ class FCN32VGG(Model):
             self.varlist.append(filt)
             conv = tf.nn.conv2d(bottom, filt, [1, 1, 1, 1], padding='SAME')
             conv_biases = self.get_bias(name, num_classes=num_classes)
+            self.varlist.append(conv_biases)
             bias = tf.nn.bias_add(conv, conv_biases)
 
             if relu:
