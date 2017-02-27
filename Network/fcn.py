@@ -246,6 +246,7 @@ class FCN32VGG(Model):
             self.varlist.append(filt)
             conv = tf.nn.conv2d(bottom, filt, [1, 1, 1, 1], padding='SAME')
             conv_biases = self.get_bias(name, num_classes=num_classes)
+            self.varlist.append(conv_biases)
             bias = tf.nn.bias_add(conv, conv_biases)
 
             if relu:
@@ -272,6 +273,7 @@ class FCN32VGG(Model):
             conv = tf.nn.conv2d(bottom, weights, [1, 1, 1, 1], padding='SAME')
             # Apply bias
             conv_biases = self._bias_variable([num_classes], constant=0.0)
+            self.varlist.append(conv_biases)
             bias = tf.nn.bias_add(conv, conv_biases)
 
             _activation_summary(bias)
