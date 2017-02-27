@@ -123,11 +123,11 @@ class FCN32VGG(Model):
         self.pred = tf.argmax(self.score_fr, dimension=3)
 
         if upsample_mode == 32:
-            self.upscore = self._upscore_layer(self.score_fr, shape=tf.shape(bgr),
+            self.upscore32 = self._upscore_layer(self.score_fr, shape=tf.shape(bgr),
                                            num_classes=num_classes,
                                            debug=debug,
                                            name='up', ksize=64, stride=32)
-            predicted_score = tf.slice(self.upscore, [0, 0, 0, 0], \
+            predicted_score = tf.slice(self.upscore32, [0, 0, 0, 0], \
                 [-1, -1, -1, self.num_classes - 1])
         elif upsample_mode == 16:
             self.upscore2 = self._upscore_layer(self.score_fr,

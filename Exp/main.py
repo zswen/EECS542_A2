@@ -70,7 +70,7 @@ def main():
 					  log_device_placement = False))
 	net = FCN32VGG()
 	with tf.device('/%s: %d' % (device, device_idx)): 
-		net.build(train = train_mode)
+		net.build(train = train_mode, upsample_mode = upsample_mode)
 		net.loss(learning_rate, optimizer_mode, bias)
 	init = tf.global_variables_initializer()
 	sess.run(init)
