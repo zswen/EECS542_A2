@@ -293,7 +293,7 @@ class FCN32VGG(Model):
             shape = [1, 1, in_features, num_classes]
             # He initialization Sheme
             num_input = in_features
-            stddev = (2 / num_input)**0.5
+            stddev = (2 / (num_input * 20))**0.5
             # Apply convolution
             w_decay = self.wd
             weights = self._variable_with_weight_decay(shape, stddev, w_decay)
@@ -329,7 +329,7 @@ class FCN32VGG(Model):
 
             # create
             num_input = ksize * ksize * in_features / stride
-            stddev = (2 / num_input)**0.5
+            stddev = (2 / (num_input * 20))**0.5
 
             weights = self.get_deconv_filter(f_shape)
             deconv = tf.nn.conv2d_transpose(bottom, weights, output_shape,

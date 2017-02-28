@@ -57,16 +57,18 @@ def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
 	subbatches = data_loader.pop(0)
 	cv_full.notify()
 	cv_empty.release()
-
+	total_loss = []
 	for idx, subbatch in enumerate(subbatches):
-		[loss, seg_loss, _] = sess.run([net.loss, net.cross_entropy_mean, net.train_op], \
+		[loss, seg_loss, softmax, upscore32, score_fr, fc7, fc6, pool4, score_pool4, fuse_pool4, _] = \
+			sess.run([net.loss, net.cross_entropy_mean, net.softmax, net.upscore32, net.score_fr, net.fc7, net.fc6, net.pool4, net.score_pool4, net.fuse_pool4, net.train_op], \
 			  				  feed_dict = {net.im_input: np.array(subbatch['images']),
 			  			   	   			   net.seg_label: np.array(subbatch['labels']),
 			  			   	   			   net.apply_grads_flag: int(idx == len(subbatches) - 1)})
+		total_loss.append(seg_loss)
 	net.done_optimize()
 	if not silent:
 		print('\t[!]segmentation loss: %f, total loss: %f' % (seg_loss, loss))
-	return seg_loss
+	return np.mean(total_loss)
 
 def main():
 	sys.path.append('../Util')
