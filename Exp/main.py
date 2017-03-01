@@ -112,13 +112,17 @@ def main():
 		for idx, img_name in enumerate(data_ims):
 			if not os.path.isfile(os.path.join(result_save_path, img_name + '.png')):
 				img = cv2.imread(os.path.join(image_root, img_name + '.jpg'))
-				label = getSegLabel([img_name], color2Idx, segmentation_root)
-				[segmentation, loss] = sess.run([net.pred_up, net.loss], 
-					feed_dict = {net.im_input: np.array([img]), 
-								 net.seg_label: np.array(label)})
-				total_loss.append(loss)
-				if idx % 1 == 0:
-					print('[#]Test Loss: %f' % loss)
+				if test_loss:
+					label = getSegLabel([img_name], color2Idx, segmentation_root)
+					[segmentation, loss] = sess.run([net.pred_up, net.loss], 
+						feed_dict = {net.im_input: np.array([img]), 
+									 net.seg_label: np.array(label)})
+					total_loss.append(loss)
+					if idx % 1 == 0:
+						print('[#]Test Loss: %f' % loss)
+				else:
+					[segmentation] = sess.run([net.pred_up], 
+						feed_dict = {net.im_input: np.array([img])})
 				visualize(segmentation[0, ...], \
 					if_seg = True, save_path = os.path.join(result_save_path, img_name + '.png'))
 				print('Save segmentation result of     %s, [%d/%d]' \

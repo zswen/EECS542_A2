@@ -32,7 +32,7 @@ class FCN32VGG(Model):
             sys.exit(1)
 
         self.data_dict = np.load(vgg16_npy_path, encoding='latin1').item()
-        self.wd = 1e-3
+        self.wd = 5e-3
         self.gradients_pool = {}
         self.average_grads = []
         self.im_input = tf.placeholder(tf.float32)

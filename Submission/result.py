@@ -129,7 +129,14 @@ def calcMetric(result_dict):
 
 
 def main():
-	if not os.path.exists('summary.pkl'):
+	#set targets
+	if len(sys.argv) != 3:
+		print('wrong arguments, <image_dir> <result_dict_dir> should be under this directory')
+		return
+	
+	image_dir = sys.argv[1]
+	result_dict_dir = sys.argv[2]
+	if not os.path.exists(result_dict_dir):
 		f = open(os.path.join(data_split_root, 'val.txt'))
 		names = f.readlines()
 		val_ims = mgr.list([name[0: -1] for name in names])
@@ -141,21 +148,20 @@ def main():
 						args = (val_ims, 
 				 				current_img,
 				 				[lock_list, lock_dict], 
-				 				total_result_dict, './Result_32'))
+				 				total_result_dict, image_dir))
 			P.start()
 			processors.append(P)
 
 		for P in processors:
 			P.join()
-		handle = open('summary.pkl', 'wb')
+		handle = open(result_dict_dir, 'wb')
 		total_result_dict = dict(total_result_dict)
 		pickle.dump(total_result_dict, handle)
 		handle.close()
 		calcMetric(total_result_dict)
 		getWrongPrediction(total_result_dict)
-		#calcMetric(total_result_dict)
 	else:
-		handle = open('summary.pkl', 'rb')
+		handle = open(result_dict_dir, 'rb')
 		result_dict = pickle.load(handle)
 		handle.close()
 		calcMetric(result_dict)

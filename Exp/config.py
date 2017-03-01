@@ -8,6 +8,7 @@ model_save = 'partialResize_accu_%d' % upsample_mode
 
 bias = None#np.ones(22)
 train_mode = False #False for testing
+test_loss = False
 optimizer_mode = 'Mome' #Support [Adam/Mome]
 result_save_path = '../Submission/Result_accu_%d' % upsample_mode
 batch_size = 20
@@ -16,7 +17,7 @@ data_loader_capacity = 20 #cache how many batches
 resize_threshold = 100
 max_iter = float('inf')
 num_processor = 4 #number of processes loading data
-silent_train = False #print loss for every step
+silent_train = True #print loss for every step
 
 image_root = '../TrainVal/VOCdevkit/VOC2011/JPEGImages'
 annotation_root = '../TrainVal/VOCdevkit/VOC2011/Annotations'
