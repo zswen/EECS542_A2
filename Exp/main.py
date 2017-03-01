@@ -130,7 +130,8 @@ def main():
 			else:
 				print('Detected segmentation result of %s, [%d/%d]' \
 					% (img_name, idx + 1, len(data_ims)))
-		print('ALL IMAGES DONE, TOTAL LOSS: %f' % np.mean(total_loss))
+		if len(total_loss) > 0:
+			print('ALL IMAGES DONE, TOTAL LOSS: %f' % np.mean(total_loss))
 	return
 	
 

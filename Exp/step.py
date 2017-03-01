@@ -69,7 +69,6 @@ def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
 	#optimization
 	sess.run([net.train_op], feed_dict = {net.apply_grads_num: np.array(sub_shapes),
 											   net.batch_num: np.array([len(sub_shapes)])})
-
 	if not silent:
 		print('\t[!]segmentation loss: %f, total loss: %f' % (seg_loss, loss))
 	return np.mean(total_loss)

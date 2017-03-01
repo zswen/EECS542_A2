@@ -1,23 +1,23 @@
 import numpy as np
 from collections import OrderedDict
 
-learning_rate = 1e-5
-upsample_mode = 16
-model_init = 'partialResize_accu_16'
-model_save = 'partialResize_accu_%d' % upsample_mode
+learning_rate = 1e-4
+upsample_mode = 32
+model_init = 'partialResize_correct_32'
+model_save = 'partialResize_correct_%d' % upsample_mode
 
 bias = None#np.ones(22)
-train_mode = False #False for testing
+train_mode = True #False for testing
 test_loss = False
 optimizer_mode = 'Mome' #Support [Adam/Mome]
-result_save_path = '../Submission/Result_accu_%d' % upsample_mode
+result_save_path = '../Submission/Result_correct_%d' % upsample_mode
 batch_size = 20
 snapshot_iter = 100 #write checkpoint for every @ iterations
 data_loader_capacity = 20 #cache how many batches
 resize_threshold = 100
 max_iter = float('inf')
 num_processor = 4 #number of processes loading data
-silent_train = True #print loss for every step
+silent_train = False #print loss for every step
 
 image_root = '../TrainVal/VOCdevkit/VOC2011/JPEGImages'
 annotation_root = '../TrainVal/VOCdevkit/VOC2011/Annotations'

@@ -184,18 +184,18 @@ class FCN32VGG(Model):
         with tf.name_scope('loss'):
             epsilon = tf.constant(value=1e-4)
             self.labels = tf.one_hot(self.seg_label, self.num_classes)
-
-            self.softmax = tf.nn.softmax(self.upscore32) + epsilon
+            self.labels_ = tf.reshape(self.labels, [-1, self.num_classes])
+            self.upscore32_ = tf.reshape(self.upscore32, [-1, self.num_classes])
 
             if head is not None:
                 cross_entropy = -tf.reduce_sum(tf.multiply(self.labels * tf.log(self.softmax),
                                                head), reduction_indices=[1])
             else:
-                cross_entropy = -tf.reduce_sum(
-                    self.labels * tf.log(self.softmax), reduction_indices=[1])
-
-            self.cross_entropy_mean = tf.reduce_mean(cross_entropy,
+                self.cross_entropy = tf.nn.softmax_cross_entropy_with_logits\
+                    (labels = self.labels_, logits = self.upscore32_)
+                self.cross_entropy_mean = tf.reduce_mean(self.cross_entropy,
                                                 name='xentropy_mean')
+            
             tf.add_to_collection('losses', self.cross_entropy_mean)
 
             self.loss = tf.add_n(tf.get_collection('losses'), name='total_loss')
