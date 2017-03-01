@@ -27,7 +27,7 @@ def analyze(gt_mask, pred_mask):
 	return result_dict
 
 def summary(img_list, current_img, locks, total_result_dict, 
-			gt_dir = segmentation_root, predict_dir = './Result'):
+			predict_dir = './Result', gt_dir = segmentation_root):
 	while current_img[0] < len(img_list):
 		locks[0].acquire()
 		idx = current_img[0]
@@ -141,7 +141,7 @@ def main():
 						args = (val_ims, 
 				 				current_img,
 				 				[lock_list, lock_dict], 
-				 				total_result_dict))
+				 				total_result_dict, './Result_32'))
 			P.start()
 			processors.append(P)
 
@@ -151,7 +151,8 @@ def main():
 		total_result_dict = dict(total_result_dict)
 		pickle.dump(total_result_dict, handle)
 		handle.close()
-		getWrongPrediction(result_dict)
+		calcMetric(total_result_dict)
+		getWrongPrediction(total_result_dict)
 		#calcMetric(total_result_dict)
 	else:
 		handle = open('summary.pkl', 'rb')

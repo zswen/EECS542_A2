@@ -32,17 +32,18 @@ class FCN32VGG(Model):
             sys.exit(1)
 
         self.data_dict = np.load(vgg16_npy_path, encoding='latin1').item()
-        self.wd = 5e-4
-        self.gradients_pool = []
+        self.wd = 1e-3
+        self.gradients_pool = {}
         self.average_grads = []
         self.im_input = tf.placeholder(tf.float32)
         self.seg_label = tf.placeholder(tf.int32)
-        self.apply_grads_flag = tf.placeholder(tf.int32)
+        self.apply_grads_num = tf.placeholder(tf.float32)
+        self.batch_num = tf.placeholder(tf.int32, shape = [1])
         self.varlist = []
         print("npy file loaded")
 
     def build(self, train, upsample_mode = 32, num_classes = 22, 
-                random_init_fc8 = False, debug = False):
+            capacity = 10, random_init_fc8 = False, debug = False):
         """
         Build the VGG model using loaded weights
         Parameters
@@ -62,6 +63,7 @@ class FCN32VGG(Model):
         # Convert RGB to BGR
 
         self.num_classes = num_classes
+        self.capacity = capacity
         self.global_step = tf.Variable(0, name = 'global_step', trainable = False)
         with tf.name_scope('Processing'):
 
@@ -205,33 +207,34 @@ class FCN32VGG(Model):
                 self.opt = tf.train.MomentumOptimizer(learning_rate = lr)
             else:
                 assert 0
+
+            #calculate gradients
             self.gradients = self.opt.compute_gradients(self.loss)
-            self.gradients_pool.append(self.gradients)
+            enqueue_ops = []
+            with tf.device('/cpu: 0'):
+                for grad_and_var in self.gradients:
+                    self.gradients_pool[grad_and_var[1]] = \
+                        tf.FIFOQueue(self.capacity, tf.float32, shapes = grad_and_var[0].get_shape())
+                    enqueue = self.gradients_pool[grad_and_var[1]].enqueue(grad_and_var[0])
+                    enqueue_ops.append(enqueue)
 
-            #self.train_op = self.opt.apply_gradients(self.gradients, 
-            #                          global_step = self.global_step)
+            self.enqueue = tf.group(*enqueue_ops)
+
+            for var in self.gradients_pool:
+                #grad_and_vars_i is (var0, grad0_imgi)
+                with tf.device('/cpu: 0'):
+                    grads = self.gradients_pool[var].dequeue_many(self.batch_num)
+                grad = tf.concat(grads, 0)
+                temp_grad_num = self.apply_grads_num
+                for _ in range(len(grad.get_shape()) - 1):
+                    temp_grad_num = tf.expand_dims(temp_grad_num, -1)
+                grad = tf.div(tf.reduce_mean(tf.multiply(grad, temp_grad_num), 0), 
+                    tf.reduce_mean(self.apply_grads_num))
+                grad_and_var = (grad, var)
+                self.average_grads.append(grad_and_var)
             
-            placeholder_op = lambda: tf.no_op()
-
-            self.train_op = tf.cond(tf.equal(self.apply_grads_flag, 1), self.optimize, placeholder_op)
-
-    def optimize(self):
-        #accumulate gradients
-        for grad_and_vars in zip(*self.gradients_pool):
-            #grad_and_vars_i is (var0, grad0_imgi)
-            grads = [tf.expand_dims(g, 0) for g, _ in grad_and_vars]
-            grad = tf.concat(grads, 0)
-            grad = tf.reduce_mean(grad, 0)
-            v = grad_and_vars[0][1]
-            grad_and_var = (grad, v)
-            self.average_grads.append(grad_and_var)
-
-        return self.opt.apply_gradients(self.average_grads, 
-                                        global_step = self.global_step)
-
-    def done_optimize(self):
-        self.average_grads = []
-        self.gradients_pool = []
+            self.train_op = self.opt.apply_gradients(self.average_grads, 
+                                      global_step = self.global_step)
 
     def _max_pool(self, bottom, name, debug):
         pool = tf.nn.max_pool(bottom, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],

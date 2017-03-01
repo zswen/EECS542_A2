@@ -58,14 +58,18 @@ def step(sess, net, data_loader, cv_empty, cv_full, silent = True):
 	cv_full.notify()
 	cv_empty.release()
 	total_loss = []
+	sub_shapes = []
 	for idx, subbatch in enumerate(subbatches):
-		[loss, seg_loss, softmax, upscore32, score_fr, fc7, fc6, pool4, score_pool4, fuse_pool4, _] = \
-			sess.run([net.loss, net.cross_entropy_mean, net.softmax, net.upscore32, net.score_fr, net.fc7, net.fc6, net.pool4, net.score_pool4, net.fuse_pool4, net.train_op], \
+		sub_shapes.append(subbatch['images'].shape[0])
+		[loss, seg_loss, _] = \
+			sess.run([net.loss, net.cross_entropy_mean, net.enqueue], \
 			  				  feed_dict = {net.im_input: np.array(subbatch['images']),
-			  			   	   			   net.seg_label: np.array(subbatch['labels']),
-			  			   	   			   net.apply_grads_flag: int(idx == len(subbatches) - 1)})
+			  			   	   			   net.seg_label: np.array(subbatch['labels'])})
 		total_loss.append(seg_loss)
-	net.done_optimize()
+	#optimization
+	sess.run([net.train_op], feed_dict = {net.apply_grads_num: np.array(sub_shapes),
+											   net.batch_num: np.array([len(sub_shapes)])})
+
 	if not silent:
 		print('\t[!]segmentation loss: %f, total loss: %f' % (seg_loss, loss))
 	return np.mean(total_loss)
@@ -88,9 +92,7 @@ def main():
 		test_label = getSegLabel([f], color2Idx, segmentation_root)
 		[prediction, loss, conv5_3] = sess.run([net.pred_up, net.loss, net.conv5_3], \
 						  				   feed_dict = {net.im_input: np.array([test_img]),
-						  			   	   				net.seg_label: np.array([test_label]),
-						  			   	   				net.apply_grads_flag: idx % 2})
-		pdb.set_trace()
+						  			   	   				net.seg_label: np.array([test_label])})
 	print(loss)
 	cv2.imwrite('test.png', prediction[0, ...])
 	return

@@ -10,6 +10,7 @@ from step import *
 from config import *
 sys.path.append('../Util')
 from debug import loadDataOneThread
+from prepare_data import getSegLabel
 from visualize import visualize
 import pdb
 
@@ -104,14 +105,20 @@ def main():
 			print('[$] iter timing: %d' % (time.clock() - t0))
 	#start testing
 	else:
+		total_loss = []
 		if not os.path.isdir(result_save_path):
 			os.makedirs(result_save_path)
 			print('[!]Direction for results not found\n[!]Create %s' % result_save_path)
 		for idx, img_name in enumerate(data_ims):
 			if not os.path.isfile(os.path.join(result_save_path, img_name + '.png')):
 				img = cv2.imread(os.path.join(image_root, img_name + '.jpg'))
-				[segmentation] = sess.run([net.pred_up], 
-					feed_dict = {net.im_input: np.array([img])})
+				label = getSegLabel([img_name], color2Idx, segmentation_root)
+				[segmentation, loss] = sess.run([net.pred_up, net.loss], 
+					feed_dict = {net.im_input: np.array([img]), 
+								 net.seg_label: np.array(label)})
+				total_loss.append(loss)
+				if idx % 1 == 0:
+					print('[#]Test Loss: %f' % loss)
 				visualize(segmentation[0, ...], \
 					if_seg = True, save_path = os.path.join(result_save_path, img_name + '.png'))
 				print('Save segmentation result of     %s, [%d/%d]' \
@@ -119,7 +126,7 @@ def main():
 			else:
 				print('Detected segmentation result of %s, [%d/%d]' \
 					% (img_name, idx + 1, len(data_ims)))
-
+		print('ALL IMAGES DONE, TOTAL LOSS: %f' % np.mean(total_loss))
 	return
 	
 

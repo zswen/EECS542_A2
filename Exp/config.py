@@ -3,20 +3,20 @@ from collections import OrderedDict
 
 learning_rate = 1e-5
 upsample_mode = 16
-model_init = 'partialResize_16'
-model_save = 'partialResize_%d' % upsample_mode
+model_init = 'partialResize_accu_16'
+model_save = 'partialResize_accu_%d' % upsample_mode
 
 bias = None#np.ones(22)
-train_mode = True #False for testing
+train_mode = False #False for testing
 optimizer_mode = 'Mome' #Support [Adam/Mome]
-result_save_path = '../Submission/Result_%d' % upsample_mode
+result_save_path = '../Submission/Result_accu_%d' % upsample_mode
 batch_size = 20
 snapshot_iter = 100 #write checkpoint for every @ iterations
-data_loader_capacity = 10 #cache how many batches
+data_loader_capacity = 20 #cache how many batches
 resize_threshold = 100
 max_iter = float('inf')
 num_processor = 4 #number of processes loading data
-silent_train = True #print loss for every step
+silent_train = False #print loss for every step
 
 image_root = '../TrainVal/VOCdevkit/VOC2011/JPEGImages'
 annotation_root = '../TrainVal/VOCdevkit/VOC2011/Annotations'
