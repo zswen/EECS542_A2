@@ -114,7 +114,7 @@ def main():
 				img = cv2.imread(os.path.join(image_root, img_name + '.jpg'))
 				if test_loss:
 					label = getSegLabel([img_name], color2Idx, segmentation_root)
-					[segmentation, loss] = sess.run([net.pred_up, net.loss], 
+					[segmentation, loss] = sess.run([net.pred_up, net.cross_entropy_mean], 
 						feed_dict = {net.im_input: np.array([img]), 
 									 net.seg_label: np.array(label)})
 					total_loss.append(loss)

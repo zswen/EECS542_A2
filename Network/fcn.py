@@ -204,7 +204,7 @@ class FCN32VGG(Model):
             if optimizer == 'Mome':
                 self.opt = tf.train.MomentumOptimizer(lr, 0.9)
             elif optimizer == 'Adam':
-                self.opt = tf.train.MomentumOptimizer(learning_rate = lr)
+                self.opt = tf.train.AdamOptimizer(learning_rate = lr)
             else:
                 assert 0
 
