@@ -3,6 +3,7 @@ import cv2
 import xml.etree.ElementTree as et
 import numpy as np
 import sys
+import pickle
 sys.path.append('../Exp')
 from config import *
 import pdb
@@ -86,7 +87,7 @@ def testLabel(image_names, annotation_root, image_root, \
 	return
 
 def main():
-	image_names = ['2007_000032', '2007_000033', '2007_000039', '2007_000068', '2007_000170']
+	image_names = pickle.load(open('bad_results.pkl', 'rb'))
 	testLabel(image_names, annotation_root, image_root, segmentation_root, 
 			  className2Idx, color2Idx, idx2ClassName)
 	return

@@ -2,15 +2,16 @@ import numpy as np
 from collections import OrderedDict
 
 learning_rate = 1e-5
-upsample_mode = 32
-model_init = 'partialResize_correct_fine_32'
-model_save = 'partialResize_correct_fine_%d' % upsample_mode
+upsample_mode = 8
+model_init = 'partialResize_correct_fine_16'
+model_save = 'partialResize_correct_%d' % upsample_mode
 
 bias = None#np.ones(22)
-train_mode = False #False for testing
+train_mode = 'special'#False for testing
+special_path = '../Util/bad_results.pkl'
 test_loss = True
 optimizer_mode = 'Mome' #Support [Adam/Mome]
-result_save_path = '../Submission/Result_correct_fine_%d' % upsample_mode
+result_save_path = '../Submission/Result_correct_%d' % upsample_mode
 batch_size = 20
 snapshot_iter = 100 #write checkpoint for every @ iterations
 data_loader_capacity = 20 #cache how many batches

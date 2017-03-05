@@ -41,11 +41,11 @@ def main():
 	device_idx = int(sys.argv[2])
 
 	#get data split
-	if train_mode:
-		split = 'train'
-	else:
-		split = 'val'
-	data_ims = getIndex(split)
+	if train_mode == 'train' or train_mode == 'val':
+		data_ims = getIndex(train_mode)
+	elif train_mode == 'special':
+		data_ims = pickle.load(open(special_path, 'rb'))
+	
 	shuffle(data_ims)
 
 	batch_current = manager.list([0])
