@@ -3,11 +3,11 @@ from collections import OrderedDict
 
 learning_rate = 1e-5
 upsample_mode = 8
-model_init = 'partialResize_correct_fine_16'
+model_init = 'partialResize_correct_8'
 model_save = 'partialResize_correct_%d' % upsample_mode
 
 bias = None#np.ones(22)
-train_mode = 'special'#False for testing
+split = 'val'#<train|val|special> case sensitive
 special_path = '../Util/bad_results.pkl'
 test_loss = True
 optimizer_mode = 'Mome' #Support [Adam/Mome]

@@ -41,10 +41,12 @@ def main():
 	device_idx = int(sys.argv[2])
 
 	#get data split
-	if train_mode == 'train' or train_mode == 'val':
-		data_ims = getIndex(train_mode)
-	elif train_mode == 'special':
+	if split == 'train' or split == 'val':
+		data_ims = getIndex(split)
+		train_mode = (split == 'train')
+	elif split == 'special':
 		data_ims = pickle.load(open(special_path, 'rb'))
+		train_mode = True
 	
 	shuffle(data_ims)
 
