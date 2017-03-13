@@ -1,6 +1,7 @@
 import os
 import sys
 import cv2
+import pickle
 from random import shuffle
 import time
 from multiprocessing import Condition, Lock, Process, Manager
@@ -82,6 +83,7 @@ def main():
 		restore_vars = []
 	else:
 		restore_vars = net.varlist
+	restore_vars = []
 	if net.load(sess, '../Checkpoints', 'Segmentation_%s' % model_init, restore_vars):
 		print('LOAD SUCESSFULLY')
 	elif train_mode:

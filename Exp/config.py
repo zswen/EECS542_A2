@@ -3,15 +3,15 @@ from collections import OrderedDict
 
 learning_rate = 1e-5
 upsample_mode = 8
-model_init = 'partialResize_correct_8'
-model_save = 'partialResize_correct_%d' % upsample_mode
+model_init = 'partialResize_correct_fine_8'
+model_save = 'partialResize_correct_fine_%d' % upsample_mode
 
 bias = None#np.ones(22)
 split = 'val'#<train|val|special> case sensitive
 special_path = '../Util/bad_results.pkl'
 test_loss = True
 optimizer_mode = 'Mome' #Support [Adam/Mome]
-result_save_path = '../Submission/Result_correct_%d' % upsample_mode
+result_save_path = '../Submission/Result_correct_fine_%d' % upsample_mode
 batch_size = 20
 snapshot_iter = 100 #write checkpoint for every @ iterations
 data_loader_capacity = 20 #cache how many batches
