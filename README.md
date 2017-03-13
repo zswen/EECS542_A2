@@ -7,7 +7,9 @@ The code should be run with Python 3
 ##Quick Start
 clone the repository and `cd ./Exp`
 change the config.py to set different config values
+
 To run with GPU: `python main.py gpu 0`
+
 To run with CPU: `python main.py cpu 0`
 ##Code Layout
 All running functions are in Exp folder
